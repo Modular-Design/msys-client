@@ -2,6 +2,8 @@ package msys.client.stages;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import msys.client.stages.tools.management.ProjectManager;
@@ -21,7 +23,7 @@ public class Project extends Stage {
         root.setRight(property_manager);
         root.setCenter(circ);
         Scene scene = new Scene(root, 400, 300);
-
+        scene.getStylesheets().add(getClass().getResource("/light-theme.css").toExternalForm());
         setTitle("Project");
         setMaximized(true);
         setScene(scene);
