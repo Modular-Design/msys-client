@@ -1,8 +1,8 @@
-package msys.client;
+package msys.client.eventhandling;
 
 
-import org.json.simple.JSONObject;
 
+import com.google.gson.Gson;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -38,7 +38,7 @@ public class GUIEventHandler {
         }
     }
 
-    public void publishEvent(Integer level, String event, JSONObject args){
+    public void publishEvent(Integer level, String event, Map<String,Object> args){
         System.out.println("EventHandler: " + event + " | " + args.toString());
         Integer start_key = _priorities.ceilingKey(level);
         if (start_key != null){
@@ -53,7 +53,7 @@ public class GUIEventHandler {
         }
     }
 
-    public void publishEvent(String event, JSONObject args){
+    public void publishEvent(String event, Map<String,Object> args){
         publishEvent(0,event, args);
     }
 

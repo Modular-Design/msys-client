@@ -1,4 +1,4 @@
-package msys.client;
+package msys.client.stages.tools.project;
 
 
 import javafx.beans.value.ChangeListener;
@@ -16,17 +16,13 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import mdd.client.connectable.Connectable;
-import mdd.client.connectable.Input;
-import mdd.client.connectable.Output;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import msys.client.eventhandling.IGUIEventClient;
 
 import java.util.Iterator;
 
 import java.util.Vector;
 
-
+/*
 public class Module extends Group implements IGUIEventClient, ChangeListener<Bounds> {
     private boolean _dragged = false;
     private Point2D _pos = new Point2D(0.0f,0.0f);
@@ -376,3 +372,4 @@ public class Module extends Group implements IGUIEventClient, ChangeListener<Bou
         background.setHeight(newValue.getHeight()+vlayout.getTranslateY()+10);
     }
 }
+*/

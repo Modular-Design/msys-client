@@ -1,5 +1,6 @@
-package msys.client;
+package msys.client.optimization;
 
+import com.google.gson.Gson;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -7,14 +8,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import mdd.client.optimization.DataModel;
-import mdd.client.optimization.PDiagramm;
-import mdd.client.optimization.PList;
-import mdd.client.optimization.Permutation;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
+import msys.client.eventhandling.GUIEventHandler;
+import msys.client.eventhandling.IGUIEventClient;
+
+/*
 
 public class Optimizer extends Stage implements IGUIEventClient {
 private DataModel data = new DataModel();
@@ -61,7 +59,7 @@ private ScrollPane scrollpane = new ScrollPane();
     }
 
     @Override
-    public void processGUIEvent(String event, JSONObject args) {
+    public void processGUIEvent(String event, Gson args) {
         if (event.equals("change")){
             if (!args.containsKey("args")){
                 return;
@@ -113,3 +111,5 @@ private ScrollPane scrollpane = new ScrollPane();
         }
     }
 }
+
+*/

@@ -1,14 +1,15 @@
-package msys.client;
+package msys.client.stages.tools.toolbox;
 
+import com.google.gson.Gson;
 import javafx.scene.control.Label;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import org.json.simple.JSONObject;
 
+/*
 public class Tool extends Label {
-    private JSONObject _context = new JSONObject();
+    private Gson _context = new Gson();
 
     public Tool(JSONObject json){
         super(json.get("key").toString());
@@ -28,3 +29,4 @@ public class Tool extends Label {
         });
     }
 }
+*/

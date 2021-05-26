@@ -3,12 +3,28 @@
  */
 package msys.client;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
+
+import javafx.application.Application;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.shape.Circle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import msys.client.stages.Login;
+import msys.client.stages.Project;
+
+public class App extends Application {
+    private Login login_stage= new Login();
+    private Project project_stage= new Project();
+
+    public void start(Stage stage) {
+        //It will show the output
+        project_stage.show();
+        //It will show the output until stage object closed
+        // login_stage.showAndWait();//TODO implement later
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        launch(args);
     }
 }

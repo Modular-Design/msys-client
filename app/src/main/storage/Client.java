@@ -1,9 +1,10 @@
 package msys.client;
 
+import com.google.gson.Gson;
 import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
-import org.json.simple.JSONArray;
+import msys.client.eventhandling.GUIEventHandler;
+import msys.client.eventhandling.IGUIEventClient;
+import com.google.gson.Gson.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -11,7 +12,8 @@ import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 import org.zeromq.ZContext;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Client implements IGUIEventClient
 {
@@ -26,9 +28,10 @@ public class Client implements IGUIEventClient
     static Client client = new Client();
 
     public void request_state(){
-        JSONObject json = new JSONObject();
+        Map<String, Object> json = new HashMap<>();
         json.put("operation", "state");
         json.put("args", "all");
+        Gson gson = new Gson();
         JSONObject jmsg = request("get",json);
         server_id = (long)jmsg.get("serverID");
         msg_counter = (long) jmsg.get("msgNr");

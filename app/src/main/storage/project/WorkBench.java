@@ -1,14 +1,12 @@
-package msys.client;
+package msys.client.stages.tools.project;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.input.*;
-import javafx.scene.layout.GridPane;
 import mdd.client.connectable.ParameterList;
+import msys.client.Client;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;

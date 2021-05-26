@@ -1,4 +1,4 @@
-package msys.client;
+package msys.client.stages.tools.toolbox;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Accordion;
@@ -10,8 +10,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+
 
 public class Toolbox extends ScrollPane implements IGUIEventClient{
     private GUIEventHandler _eventhandler;

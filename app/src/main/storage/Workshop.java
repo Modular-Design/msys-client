@@ -1,21 +1,18 @@
-package msys.client;
+package msys.client.stages.tools.project;
 
-import javafx.collections.ObservableList;
-import javafx.scene.control.Tab;
+import com.google.gson.Gson;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.*;
-import javafx.scene.paint.Color;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import msys.client.eventhandling.GUIEventHandler;
+import msys.client.eventhandling.IGUIEventClient;
+
 
 import java.util.Vector;
 
 
 public class Workshop extends TabPane implements IGUIEventClient {
     private GUIEventHandler _eventHandler;
-    private Processor _main_processor;
+    private Module _main_processor;
     protected int _index;
 
     public Workshop(){
@@ -95,7 +92,7 @@ public class Workshop extends TabPane implements IGUIEventClient {
     }
 
     @Override
-    public void processGUIEvent(String event, JSONObject args) {
+    public void processGUIEvent(String event, Gson args) {
 
         if (event == "OPEN_PROCESSOR"){
             System.out.println("[Workshop]: OPEN_PROCESSOR with path = " +args.get("path").toString());

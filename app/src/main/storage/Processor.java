@@ -1,4 +1,4 @@
-package msys.client;
+package msys.client.stages.tools.project;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Group;

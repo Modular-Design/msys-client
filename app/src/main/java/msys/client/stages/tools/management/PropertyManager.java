@@ -1,13 +1,14 @@
-package msys.client;
+package msys.client.stages.tools.management;
 
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import javafx.scene.layout.BorderPane;
 
-import java.util.Iterator;
+public class PropertyManager extends BorderPane {
+    public PropertyManager(){
+        super();
+    }
+}
 
+/*
 public class PropertyManager extends ScrollPane implements IGUIEventClient{
     private GUIEventHandler _eventHandler;
     private JSONObject jsel  = new JSONObject();
@@ -123,3 +124,4 @@ public class PropertyManager extends ScrollPane implements IGUIEventClient{
         }
     }
 }
+*/

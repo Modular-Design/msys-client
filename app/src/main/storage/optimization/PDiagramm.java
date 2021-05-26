@@ -12,7 +12,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import mdd.client.GUIEventHandler;
+import msys.client.eventhandling.GUIEventHandler;
 
 import java.util.Comparator;
 import java.util.Enumeration;
