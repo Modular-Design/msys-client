@@ -46,6 +46,7 @@ public class ToolManager extends VisualElement {
 
         ScrollPane scrollPane = new ScrollPane();
 
+
         scrollPane.setContent(tool_box);
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
