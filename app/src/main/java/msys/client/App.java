@@ -14,6 +14,7 @@ import msys.client.stages.Login;
 import msys.client.stages.Project;
 
 public class App extends Application {
+    private Client client = new Client("http://127.0.0.1:8000", "/pubsub");
     private Login login_stage= new Login();
     private Project project_stage= new Project();
 

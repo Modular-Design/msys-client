@@ -1,10 +1,35 @@
 package msys.client.stages.tools.management;
 
+import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
+import msys.client.eventhandling.Events;
+import msys.client.eventhandling.IGUIEventClient;
+import msys.client.visual.VisualElement;
 
-public class PropertyManager extends BorderPane {
+import java.util.HashMap;
+import java.util.Map;
+
+public class PropertyManager extends VisualElement {
     public PropertyManager(){
-        super();
+        super(0);
+        Map<String, Object> map = new HashMap<>();
+        map.put("url","/modules/root/");
+        publishEvent(0,Events.GET, map);
+    }
+
+    @Override
+    public void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg) {
+
+    }
+
+    @Override
+    public void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg) {
+
+    }
+
+    @Override
+    public Node getVisual() {
+        return new BorderPane();
     }
 }
 

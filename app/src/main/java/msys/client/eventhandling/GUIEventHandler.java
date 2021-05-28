@@ -1,16 +1,21 @@
 package msys.client.eventhandling;
 
-
-
-import com.google.gson.Gson;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+
 public class GUIEventHandler {
+
     private static Vector<GUIEventHandler> _handler = new Vector<>();
     private ConcurrentSkipListMap<Integer,Vector<IGUIEventClient>> _priorities = new ConcurrentSkipListMap<>();
 
+    /**
+     *  level 0: Client
+     *  level 1: Connectables
+     *  level 2: Connections
+     *  level 3: Modules
+     *  level 4: Manager
+     */
     public GUIEventHandler(){
 
     }
@@ -38,23 +43,33 @@ public class GUIEventHandler {
         }
     }
 
-    public void publishEvent(Integer level, String event, Map<String,Object> args){
-        System.out.println("EventHandler: " + event + " | " + args.toString());
+
+    /**
+     * publish an event into the process stack
+     * @param client
+     * @param level
+     * @param event
+     * @param msg
+     */
+    public void publishEvent(IGUIEventClient client, Integer level, Events event, Map<String,Object> msg){
+
+        System.out.println("publishEvent: "+level+" "+event.toString());//TODO
+
         Integer start_key = _priorities.ceilingKey(level);
         if (start_key != null){
             for (Map.Entry<Integer,Vector<IGUIEventClient>> entry : _priorities.entrySet()){
                 if (entry.getKey() >= start_key){
                     Vector<IGUIEventClient> clients = entry.getValue();
                     for (int i = 0; i < clients.size(); ++i) {
-                        clients.elementAt(i).processGUIEvent(event, args);
+                        clients.elementAt(i).categorizeGUIEvent(client, level, event, msg);
                     }
                 }
             }
         }
     }
 
-    public void publishEvent(String event, Map<String,Object> args){
-        publishEvent(0,event, args);
+    public void publishEvent(Integer level, Events event, Map<String,Object> msg){
+        this.publishEvent(null, level, event, msg);
     }
 
     public static GUIEventHandler getEventHandler(int index){

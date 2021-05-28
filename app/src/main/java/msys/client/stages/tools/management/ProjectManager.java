@@ -3,21 +3,40 @@ package msys.client.stages.tools.management;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyCombination;
+import msys.client.eventhandling.Events;
+import msys.client.eventhandling.IGUIEventClient;
+import msys.client.visual.VisualElement;
 
-public class ProjectManager extends MenuBar {
+import java.util.HashMap;
+import java.util.Map;
+
+public class ProjectManager extends VisualElement {
+    private MenuBar root = new MenuBar();
+    private Menu fileMenu = new Menu("_File");
+    private MenuItem open = new MenuItem("Open");
+    private MenuItem close = new MenuItem("Close");
+    private MenuItem save = new MenuItem("Save");
+    private MenuItem exit = new MenuItem("Exit");
+
+    //Create the Options menu.
+    private Menu optionsMenu = new Menu("_Options");
+    // Create the Colors submenu.
+    private Menu colorsMenu = new Menu("Colors");
+    private MenuItem red = new MenuItem("Red");
+    private MenuItem green = new MenuItem("Green");
+    private MenuItem blue = new MenuItem("Blue");
+
+    private Menu helpMenu = new Menu("_Help");
+    private MenuItem about = new MenuItem("About");
+
     public ProjectManager() {
-        Menu fileMenu = new Menu("_File");
-
-        MenuItem open = new MenuItem("Open");
-        MenuItem close = new MenuItem("Close");
-        MenuItem save = new MenuItem("Save");
-        MenuItem exit = new MenuItem("Exit");
-
+        super(0);
         // Add keyboard accelerators for the File menu.
         open.setAccelerator(KeyCombination.keyCombination("shortcut+O"));
         close.setAccelerator(KeyCombination.keyCombination("shortcut+C"));
@@ -27,25 +46,10 @@ public class ProjectManager extends MenuBar {
         fileMenu.getItems().addAll(open, close, save, new SeparatorMenuItem(), exit);
 
         //Add File menu to the menu bar.
-        getMenus().add(fileMenu);
+        root.getMenus().add(fileMenu);
 
-
-        //Create the Options menu.
-        Menu optionsMenu = new Menu("_Options");
-        // Create the Colors submenu.
-        Menu colorsMenu = new Menu("Colors");
-        MenuItem red = new MenuItem("Red");
-        MenuItem green = new MenuItem("Green");
-        MenuItem blue = new MenuItem("Blue");
-
-
-        colorsMenu.getItems().
-
-                addAll(red, green, blue);
-
-        optionsMenu.getItems().
-
-                add(colorsMenu);
+        colorsMenu.getItems().addAll(red, green, blue);
+        optionsMenu.getItems().add(colorsMenu);
 
 
 // Create the Priority submenu.
@@ -82,44 +86,24 @@ public class ProjectManager extends MenuBar {
 
 
         //Add Options menu to the menu bar.
-
-
-        getMenus().add(optionsMenu);
+        root.getMenus().add(optionsMenu);
 
 
         //Create the Help menu.
 
-
-        Menu helpMenu = new Menu("_Help");
-
-        MenuItem about = new MenuItem("About");
-        helpMenu.getItems().
-
-                add(about);
+        helpMenu.getItems().add(about);
 
 
         //Add Help menu to the menu bar.
-
-        getMenus().add(helpMenu);
+        root.getMenus().add(helpMenu);
 
 
         //Create one event handler that will handle menu action events.
-
-
         EventHandler<ActionEvent> MEHandler =
-
-
                 ae -> {
-
-
                     String name = ((MenuItem) ae.getTarget()).getText();
-
-
-// If Exit is chosen, the program is terminated.
-
+                    // If Exit is chosen, the program is terminated.
                     if (name.equals("Exit")) Platform.exit();
-
-
                 };
 
 
@@ -141,5 +125,25 @@ public class ProjectManager extends MenuBar {
         reset.setOnAction(MEHandler);
 
         about.setOnAction(MEHandler);
+
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("url","/extensions/");
+        publishEvent(0,Events.GET, map);
+    }
+
+    @Override
+    public void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg) {
+
+    }
+
+    @Override
+    public void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg) {
+
+    }
+
+    @Override
+    public Node getVisual() {
+        return root;
     }
 }
