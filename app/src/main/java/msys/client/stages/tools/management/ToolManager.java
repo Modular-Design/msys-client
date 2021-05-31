@@ -31,7 +31,7 @@ public class ToolManager extends VisualElement {
     private final GUIEventHandler _eventHandler = GUIEventHandler.getEventHandler(0);
 
     public ToolManager(){
-        super(0);
+        super(0, 4);
         extentsions.setAlignment(Pos.TOP_CENTER);
         fast_access.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -66,17 +66,22 @@ public class ToolManager extends VisualElement {
 
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/");
-        publishEvent(0,Events.GET, map);
+        publishEvent("Client", 0,Events.GET, map);
     }
 
     @Override
-    public void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg) {
+    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
         // never list process besides  direct messages
+        if (receiver != null){
+            if (receiver.equals("ToolManager")){
+                processGUIEvent(sender, event, msg);
+            }
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg) {
+    public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
         ArrayList<Map<String,String>> extentions = (ArrayList<Map<String,String>>)msg.get("modules");
 
         int counter = 0;
@@ -86,7 +91,6 @@ public class ToolManager extends VisualElement {
                 Map<String,Object> map = new HashMap<>();
                 Button menu = new Button("_"+(counter++)+":"+pkg);
                 menu.setOnAction(btn_event -> {
-                    System.out.println("Pressed "+ pkg);
                     ArrayList<Tool> tools = (ArrayList<Tool>) extension_overview.get(pkg).get("tools");
                     tool_box.getChildren().clear();
                     for (Tool tool : tools) {

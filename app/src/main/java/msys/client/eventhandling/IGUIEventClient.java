@@ -12,7 +12,7 @@ public interface IGUIEventClient extends AutoCloseable {
      * @param event
      * @param msg
      */
-    void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg);
+    void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg);
 
     /**
      * Here the GUIEvent processing takes place
@@ -23,5 +23,5 @@ public interface IGUIEventClient extends AutoCloseable {
      * @param event
      * @param msg
      */
-    void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg);
+    void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg);
 }

@@ -18,7 +18,7 @@ public class Tool extends VisualElement {
     private Button root = new Button();
 
     public Tool(Map<String, String> content) {
-        super(0);
+        super(0, -1);
         this.content = content;
         root.setText(content.get("name"));
 
@@ -34,12 +34,12 @@ public class Tool extends VisualElement {
     }
 
     @Override
-    public void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg) {
+    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
 
     }
 
     @Override
-    public void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg) {
+    public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
 
     }
 

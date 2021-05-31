@@ -1,6 +1,7 @@
 package msys.client;
 
 import com.google.gson.Gson;
+
 import javafx.application.Platform;
 import msys.client.eventhandling.Events;
 import msys.client.eventhandling.GUIEventClient;
@@ -13,9 +14,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import org.apache.http.util.EntityUtils;
+
+import org.java_websocket.client.WebSocketClient;
 import org.zeromq.SocketType;
-import org.zeromq.ZMQ;
 import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
+
+import java.net.URI;
+
 
 
 import java.io.IOException;
@@ -24,7 +30,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Client extends GUIEventClient
@@ -32,7 +37,8 @@ public class Client extends GUIEventClient
     private String protocol;
     private String host;
     //private Websocket
-    private ZMQ.Socket sub_socket;
+    private ZMQ.Socket sub_socket=null;//
+
     private final Thread listenerThread;
 
     //static Client client = new Client("ipc://localhost:8000", "/pubsub");
@@ -42,7 +48,7 @@ public class Client extends GUIEventClient
      * @param endpoint the Publischer-Subscriber-Endpoint typically "/pubsub"
      */
     public Client(String url, String endpoint){
-        super(0);
+        super(0, 0);
 
         //url is <protocol>//<host>
         String[] parts= url.split("://");
@@ -61,11 +67,11 @@ public class Client extends GUIEventClient
         try{
             ZContext context = new ZContext();
             sub_socket = context.createSocket(SocketType.SUB);
-            sub_socket.connect("ipc://"+host+ endpoint);
+            sub_socket.connect("tcp://localhost:5557");//+host+ endpoint
             sub_socket.subscribe("".getBytes());
-            //sub_socket.subscribe("connect".getBytes(ZMQ.CHARSET));
-            //sub_socket.subscribe("change".getBytes(ZMQ.CHARSET));
-            //sub_socket.subscribe("delete".getBytes(ZMQ.CHARSET));
+            sub_socket.subscribe("connect".getBytes(ZMQ.CHARSET));
+            sub_socket.subscribe("change".getBytes(ZMQ.CHARSET));
+            sub_socket.subscribe("delete".getBytes(ZMQ.CHARSET));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +89,7 @@ public class Client extends GUIEventClient
      * @return response
      */
     @SuppressWarnings("unchecked")
-    public Map<String, Object>  request(Events event, Map<String, Object> map){
+    public Map<String, Object>  request(String event, Map<String, Object> map){
         var path = (String)map.get("url");
         if (path == null){
             return null;
@@ -104,25 +110,24 @@ public class Client extends GUIEventClient
             e.printStackTrace();
         }
 
-        switch (event) {
-            case GET -> request = new HttpGet(url);
-            case ADD, CONNECT -> {
-                request = new HttpPost(url);
-                try {
-                    ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(body));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+        if (Events.GET.equals(event)) {
+            request = new HttpGet(url);
+        } else if (Events.ADD.equals(event) || Events.CONNECT.equals(event)) {
+            request = new HttpPost(url);
+            try {
+                ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(body));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
-            case CHANGE -> {
-                request = new HttpPut(url);
-                try {
-                    ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(body));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+        } else if (Events.CHANGE.equals(event)) {
+            request = new HttpPut(url);
+            try {
+                ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(body));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
-            case DELETE -> request = new HttpDelete(url);
+        } else if (Events.DELETE.equals(event)) {
+            request = new HttpDelete(url);
         }
 
         // send request and send response
@@ -145,7 +150,6 @@ public class Client extends GUIEventClient
         // placeholder mabye later for reloader
     }
 
-
     /**
      * listens to the Publisher and Subscriber-Endpoint
      */
@@ -155,42 +159,20 @@ public class Client extends GUIEventClient
             // Read envelope with address
             String topic = sub_socket.recvStr();
             // Read message contents
+            String receiver = sub_socket.recvStr();
             String body = sub_socket.recvStr();
 
-            System.out.println("[Client]: "+body);
             Map<String, Object> map = new Gson().fromJson(body, Map.class);//TODO unsafe
 
             boolean everything_ok = true;
 
             if (everything_ok){
-                Events event = event_from_string(topic);
-                Platform.runLater(() -> publishEvent(1, event, map));
+                Platform.runLater(() -> publishEvent(receiver,1, topic, map));
             } else {
                 Platform.runLater(this::request_state);
             }
+            //*/
         }
-    }
-
-    private Events event_from_string(String topic){
-        System.out.println(topic); //TODO
-        switch (topic){
-            case "add" ->{
-                return Events.ADD;
-            }
-            case "connect" ->{
-                return Events.CONNECT;
-            }
-            case "change" ->{
-                return Events.CHANGE;
-            }
-            case "delete" ->{
-                return Events.DELETE;
-            }
-            case "get" ->{
-                return Events.GET;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -200,23 +182,20 @@ public class Client extends GUIEventClient
     }
 
     @Override
-    public void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg) {
-        System.out.println(level);
-        if (level == 0){
+    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
+        if (level == 0 || receiver.equals("Client")){
             processGUIEvent(sender, event, msg);
         }
     }
 
     @Override
-    public void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg) {
-        System.out.println("processing");
+    public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
         var result = request(event,  msg);
-        System.out.println(result);//sout
         if (result != null){
             if (sender != null){
                 sender.processGUIEvent(this, event, result);
             }else {
-                publishEvent(1, event, result);
+                publishEvent(null, 1, event, result);
             }
 
         }

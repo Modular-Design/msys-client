@@ -36,7 +36,7 @@ public class ProjectManager extends VisualElement {
     private MenuItem about = new MenuItem("About");
 
     public ProjectManager() {
-        super(0);
+        super(0, 4);
         // Add keyboard accelerators for the File menu.
         open.setAccelerator(KeyCombination.keyCombination("shortcut+O"));
         close.setAccelerator(KeyCombination.keyCombination("shortcut+C"));
@@ -129,16 +129,20 @@ public class ProjectManager extends VisualElement {
 
         Map<String, Object> map = new HashMap<>();
         map.put("url","/extensions/");
-        publishEvent(0,Events.GET, map);
+        publishEvent("Client", 0,Events.GET, map);
     }
 
     @Override
-    public void categorizeGUIEvent(IGUIEventClient sender, Integer level, Events event, Map<String, Object> msg) {
-
+    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
+        if (receiver != null){
+            if (receiver.equals("ProjectManager")){
+                processGUIEvent(sender, event, msg);
+            }
+        }
     }
 
     @Override
-    public void processGUIEvent(IGUIEventClient sender, Events event, Map<String, Object> msg) {
+    public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
 
     }
 

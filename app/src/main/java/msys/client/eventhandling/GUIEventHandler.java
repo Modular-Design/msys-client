@@ -46,30 +46,28 @@ public class GUIEventHandler {
 
     /**
      * publish an event into the process stack
-     * @param client
+     * @param sender
+     * @param receiver
      * @param level
      * @param event
      * @param msg
      */
-    public void publishEvent(IGUIEventClient client, Integer level, Events event, Map<String,Object> msg){
-
-        System.out.println("publishEvent: "+level+" "+event.toString());//TODO
-
+    public void publishEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String,Object> msg){
         Integer start_key = _priorities.ceilingKey(level);
         if (start_key != null){
             for (Map.Entry<Integer,Vector<IGUIEventClient>> entry : _priorities.entrySet()){
                 if (entry.getKey() >= start_key){
                     Vector<IGUIEventClient> clients = entry.getValue();
                     for (int i = 0; i < clients.size(); ++i) {
-                        clients.elementAt(i).categorizeGUIEvent(client, level, event, msg);
+                        clients.elementAt(i).categorizeGUIEvent(sender, receiver, level, event, msg);
                     }
                 }
             }
         }
     }
 
-    public void publishEvent(Integer level, Events event, Map<String,Object> msg){
-        this.publishEvent(null, level, event, msg);
+    public void publishEvent(Integer level, String event, Map<String,Object> msg){
+        this.publishEvent(null, null, level, event, msg);
     }
 
     public static GUIEventHandler getEventHandler(int index){
