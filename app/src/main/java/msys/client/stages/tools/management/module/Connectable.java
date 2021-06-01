@@ -26,11 +26,7 @@ public class Connectable extends VisualElement {
     public Connectable(Map<String, Object> config) {
         super(0,2);
         this.config = config;
-        in_shape.getPoints().addAll(
-                15.0, 7.5,
-                0.0, 0.0,
-                0.0, 15.0
-        );
+
         in_shape.setFill(Color.GREEN);
         in_shape.setStrokeWidth(1);
         in_shape.setStroke(Color.BLACK);
@@ -51,16 +47,46 @@ public class Connectable extends VisualElement {
     }
 
 
-    public Node asInput(){
-        HBox layout = new HBox(in_shape, name);
+    public Node asInput(boolean inverted){
+
+        HBox layout;
+        in_shape.getPoints().clear();
+        if (inverted){
+            in_shape.getPoints().addAll(
+                    -15.0, 7.5,
+                    0.0, 0.0,
+                    0.0, 15.0
+            );
+            layout = new HBox(name, in_shape);
+        } else {
+            in_shape.getPoints().addAll(
+                    15.0, 7.5,
+                    0.0, 0.0,
+                    0.0, 15.0
+            );
+            layout = new HBox(in_shape, name);
+        }
         input_layout.getChildren().addAll(layout);
         return input_layout;
     }
 
-    public Node asOutput(){
-        HBox layout = new HBox(name, out_shape);
+    public Node asInput(){
+        return asInput(false);
+    }
+
+    public Node asOutput(boolean inverted){
+        HBox layout;
+        if (inverted){
+            layout= new HBox(out_shape, name);
+        } else {
+            layout= new HBox(name, out_shape);
+        }
         output_layout.getChildren().addAll(layout);
         return output_layout;
+    }
+
+    public Node asOutput(){
+        return asOutput(false);
     }
 
 

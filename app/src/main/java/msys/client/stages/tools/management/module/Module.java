@@ -2,15 +2,15 @@ package msys.client.stages.tools.management.module;
 
 import com.google.gson.Gson;
 import javafx.event.EventHandler;
+import javafx.event.EventTarget;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -19,6 +19,7 @@ import msys.client.eventhandling.IGUIEventClient;
 import msys.client.visual.VisualElement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Module extends VisualElement {
@@ -32,6 +33,9 @@ public class Module extends VisualElement {
     private Map<String , Object> config;
     private String name;
     private String identifier;
+    private boolean selected = false;
+    private Point2D position = new Point2D(0,0);
+    private Metadata metadata;
 
     public Module(Map<String, Object> config) {
         super(0, 3);
@@ -44,6 +48,12 @@ public class Module extends VisualElement {
             if (receiver.equals(identifier)){
                 System.out.println("[Module]: categorizeGUIEvent ");
                 processGUIEvent(sender, event, msg);
+            }
+            else{
+                if(event.equals("select")){
+                    selected = false;
+                    updateExternLayout();
+                }
             }
         }
     }
@@ -61,17 +71,15 @@ public class Module extends VisualElement {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String , Object> extractMetaData(Map<String , Object> config){
-        return (Map<String , Object>) config.get("metadata");
+    private static Metadata extractMetaData(Map<String , Object> config){
+        return new Metadata((Map<String, Object>) config.get("metadata"));
     }
 
+
     private static String extractName(Map<String , Object> config){
-        Map<String , Object> meta = Module.extractMetaData(config);
-        if (meta != null){
-            String name = (String) meta.get("name");
-            if (name != null && !name.equals("")){
-                return name;
-            }
+        Metadata meta = Module.extractMetaData(config);
+        if (meta.name != null && !meta.name.equals("")){
+            return meta.name;
         }
         return (String) config.get("id");
     }
@@ -129,18 +137,25 @@ public class Module extends VisualElement {
         return result;
     }
 
+    private static Map<String, Object> updateMetadata(Map<String , Object> config, Metadata metadata){
+        config.put("metadata", metadata.toMap());
+        return config;
+    }
+
     public String getName(){
         return name;
     }
 
     private void updateLayout(Map<String , Object> config){
         this.config = config;
+        this.metadata = Module.extractMetaData(this.config);
         this.name = Module.extractName(this.config);
         this.identifier = Module.extractIdentifier(this.config);
         this.modules = Module.extractModules(this.config);
         this.options = Module.extractOptions(this.config);
         this.inputs = Module.extractInputs(this.config);
         this.outputs = Module.extractOutputs(this.config);
+
 
         System.out.println("[Module]: updateLayout: " + this.identifier);
         updateInternLayout();
@@ -251,18 +266,108 @@ public class Module extends VisualElement {
         }
         VBox top_layout = new VBox(header, options);
 
-        BorderPane main_placement = new BorderPane();
-        main_placement.setTop(top_layout);
+
+        VBox inputs = new VBox();
+        inputs.setPrefWidth(150);
+        if (this.inputs != null){
+            System.out.println("[Module]: updateInternLayout: ");
+            for (Connectable input: this.inputs){
+                inputs.getChildren().add(input.asInput(this.metadata.inverted));
+            }
+        }
+
+        VBox outputs = new VBox();
+        if (this.outputs != null){
+            System.out.println("[Module]: updateInternLayout: ");
+            for (Connectable output: this.outputs){
+                outputs.getChildren().add(output.asOutput(this.metadata.inverted));
+            }
+        }
+
+        BorderPane bottom_placement = new BorderPane();
+        if(this.metadata.inverted){
+            bottom_placement.setRight(inputs);
+            bottom_placement.setLeft(outputs);
+        }else{
+            bottom_placement.setLeft(inputs);
+            bottom_placement.setRight(outputs);
+        }
+
+
+        VBox main_placement = new VBox(top_layout, bottom_placement);
+        AnchorPane main_layout = new AnchorPane(main_placement);
+        double anchor = 0;
+        if (selected){
+            anchor = 2;
+        }
+        AnchorPane.setTopAnchor(main_placement, anchor);
+        AnchorPane.setLeftAnchor(main_placement, anchor);
+        AnchorPane.setRightAnchor(main_placement, anchor);
+        AnchorPane.setBottomAnchor(main_placement, anchor);
 
         Rectangle main_background = new Rectangle();
+        main_background.setFill(Color.LIGHTGREY);
+        if(selected){
+            main_background.setStrokeWidth(2);
+            main_background.setStroke(Color.YELLOW);
+        }
+        main_background.widthProperty().bind(main_layout.widthProperty());
+        main_background.heightProperty().bind(main_layout.heightProperty());
 
         StackPane main = new StackPane();
         main.getChildren().add(main_background);
-        main.getChildren().add(main_placement);// on Top
+        main.getChildren().add(main_layout);// on Top
 
-
-        extern_layout = new Group();
+        extern_layout.getChildren().clear();
         extern_layout.getChildren().addAll(main);
+
+        extern_layout.setTranslateX(metadata.pos.get("x"));
+        extern_layout.setTranslateY(metadata.pos.get("y"));
+
+        main.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+            if(e.getButton() == MouseButton.PRIMARY) {
+                selected = true;
+                publishEvent(identifier, 1, "select", null);
+                this.position = new Point2D(e.getSceneX(), e.getSceneY());
+                e.consume();
+                updateExternLayout();
+            }
+            if (e.getButton() == MouseButton.SECONDARY){
+                this.metadata.inverted = !this.metadata.inverted;
+                e.consume();
+                updateExternLayout();
+            }
+        });
+
+
+        main.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
+            // System.out.println("[Module]: dragg event detected!");
+            if(e.getButton() == MouseButton.PRIMARY) {
+                if (selected) {
+                    double x = extern_layout.getTranslateX() + (e.getSceneX() - this.position.getX());
+                    double y = extern_layout.getTranslateY() + (e.getSceneY() - this.position.getY());
+                    extern_layout.setTranslateX(x);
+                    extern_layout.setTranslateY(y);
+                    this.position = new Point2D(e.getSceneX(), e.getSceneY());
+                }
+            }
+        });
+
+
+        main.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
+            // System.out.println("[Module]: dragg event detected!");
+            if(e.getButton() == MouseButton.PRIMARY) {
+                if (selected){
+                    this.metadata.pos.put("x", extern_layout.getTranslateX());
+                    this.metadata.pos.put("y", extern_layout.getTranslateY());
+                    Map<String, Object> msg = Module.updateMetadata(this.config, this.metadata);
+                    msg.put("url", "/modules/"+identifier);
+                    publishEvent("CLIENT",0, Events.CHANGE, msg);
+                }
+            }
+        });
+
+
     }
 
     public Node getInternLayout(){

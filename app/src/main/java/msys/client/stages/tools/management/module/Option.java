@@ -46,7 +46,7 @@ public class Option extends VisualElement {
                 }
             }
         } else {
-            layout.getChildren().add(new TextField());
+            layout.getChildren().add(new TextField((String)this.config.get("value")));
         }
 
 
