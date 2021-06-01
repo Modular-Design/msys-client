@@ -14,12 +14,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import org.apache.http.util.EntityUtils;
-
-import org.java_websocket.client.WebSocketClient;
-import org.zeromq.SocketType;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
-
 import java.net.URI;
 
 
@@ -36,10 +30,6 @@ public class Client extends GUIEventClient
 {
     private String protocol;
     private String host;
-    //private Websocket
-    private ZMQ.Socket sub_socket=null;//
-
-    private final Thread listenerThread;
 
     //static Client client = new Client("ipc://localhost:8000", "/pubsub");
 
@@ -65,21 +55,38 @@ public class Client extends GUIEventClient
 
 
         try{
-            ZContext context = new ZContext();
-            sub_socket = context.createSocket(SocketType.SUB);
-            sub_socket.connect("tcp://localhost:5557");//+host+ endpoint
-            sub_socket.subscribe("".getBytes());
-            sub_socket.subscribe("connect".getBytes(ZMQ.CHARSET));
-            sub_socket.subscribe("change".getBytes(ZMQ.CHARSET));
-            sub_socket.subscribe("delete".getBytes(ZMQ.CHARSET));
+            URL u = new URL( "http://"+ host +"/pubsub");
+            URI uri = new URI("ws", null, u.getHost(), u.getPort(), u.getPath(), u.getQuery(), u.getRef());
+            System.out.println("[Client]: "+ uri.toASCIIString());
+            WebSocketClientEndpoint client = new WebSocketClientEndpoint(uri);
+            client.addMessageHandler(new WebSocketClientEndpoint.MessageHandler() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public void handleMessage(String message) {
+                    Map<String, Object> msg = new Gson().fromJson(message, Map.class);//TODO unsafe
+                    // Read envelope with address
+                    String topic = (String) msg.get("topic");
+                    // Read message contents
+                    String receiver = new Gson().toJson(msg.get("receiver"));
+                    Map<String, Object> map = (Map<String, Object>)msg.get("content");
+
+                    boolean everything_ok = true;
+
+                    if (everything_ok){
+                        Platform.runLater(() -> publishEvent(receiver,1, topic, map));
+                    }
+                    //*/
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         request_state();
 
-        Runnable runnable = this::listen;
-        listenerThread = new Thread(runnable);
-        listenerThread.start();
+        //Runnable runnable = this::listen;
+        //listenerThread = new Thread(runnable);
+        //listenerThread.start();
     }
 
     /**
@@ -156,29 +163,13 @@ public class Client extends GUIEventClient
     @SuppressWarnings("unchecked")
     private void listen(){
         while (!Thread.currentThread().isInterrupted()) {
-            // Read envelope with address
-            String topic = sub_socket.recvStr();
-            // Read message contents
-            String receiver = sub_socket.recvStr();
-            String body = sub_socket.recvStr();
 
-            Map<String, Object> map = new Gson().fromJson(body, Map.class);//TODO unsafe
-
-            boolean everything_ok = true;
-
-            if (everything_ok){
-                Platform.runLater(() -> publishEvent(receiver,1, topic, map));
-            } else {
-                Platform.runLater(this::request_state);
-            }
-            //*/
         }
     }
 
     @Override
     public void close() throws Exception {
         super.close();
-        listenerThread.join();
     }
 
     @Override

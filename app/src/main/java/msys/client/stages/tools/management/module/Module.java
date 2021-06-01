@@ -42,6 +42,7 @@ public class Module extends VisualElement {
     public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
         if (receiver != null){
             if (receiver.equals(identifier)){
+                System.out.println("[Module]: categorizeGUIEvent ");
                 processGUIEvent(sender, event, msg);
             }
         }
@@ -49,9 +50,13 @@ public class Module extends VisualElement {
 
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-        System.out.println("[Module]: "+msg);
+        System.out.println("[Module]: processGUIEvent: "+event +"msg: "+  msg);
         if (event.equals("add")){
             modules.add(new Module(msg));
+            updateInternLayout();
+        }
+        if (event.equals("status")){
+            updateLayout(msg);
         }
     }
 
@@ -78,7 +83,6 @@ public class Module extends VisualElement {
 
     @SuppressWarnings("unchecked")
     private static ArrayList<Option> extractOptions(Map<String , Object> config){
-        System.out.println("[Module] extract: "+ config.toString());
         ArrayList<Option> result = new ArrayList<>();
         ArrayList<Map<String, Object>> options = (ArrayList<Map<String, Object>>)config.get("options");
         if (options != null){
@@ -91,7 +95,6 @@ public class Module extends VisualElement {
 
     @SuppressWarnings("unchecked")
     private static ArrayList<Connectable> extractInputs(Map<String , Object> config){
-        System.out.println("[Module] extract: "+ config.toString());
         ArrayList<Connectable> result = new ArrayList<>();
         ArrayList<Map<String, Object>> inputs = (ArrayList<Map<String, Object>>)config.get("inputs");
         if (inputs != null){
@@ -104,7 +107,6 @@ public class Module extends VisualElement {
 
     @SuppressWarnings("unchecked")
     private static ArrayList<Connectable> extractOutputs(Map<String , Object> config){
-        System.out.println("[Module] extract: "+ config.toString());
         ArrayList<Connectable> result = new ArrayList<>();
         ArrayList<Map<String, Object>> outputs = (ArrayList<Map<String, Object>>)config.get("outputs");
         if (outputs != null){
@@ -117,7 +119,6 @@ public class Module extends VisualElement {
 
     @SuppressWarnings("unchecked")
     private static ArrayList<Module> extractModules(Map<String , Object> config){
-        System.out.println("[Module] extract: "+ config.toString());
         ArrayList<Module> result = new ArrayList<>();
         ArrayList<Map<String, Object>> modules = (ArrayList<Map<String, Object>>)config.get("modules");
         if (modules != null){
@@ -141,7 +142,7 @@ public class Module extends VisualElement {
         this.inputs = Module.extractInputs(this.config);
         this.outputs = Module.extractOutputs(this.config);
 
-        System.out.println("[Module]: " + this.identifier);
+        System.out.println("[Module]: updateLayout: " + this.identifier);
         updateInternLayout();
         updateExternLayout();
     }
@@ -150,7 +151,7 @@ public class Module extends VisualElement {
         VBox inputs = new VBox();
         inputs.setPrefWidth(150);
         if (this.inputs != null){
-            System.out.println("[Module]: Inputs");
+            System.out.println("[Module]: updateInternLayout: ");
             for (Connectable input: this.inputs){
                 inputs.getChildren().add(input.asOutput());
             }
