@@ -7,9 +7,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -70,77 +68,7 @@ public class Module extends VisualElement {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static Metadata extractMetaData(Map<String , Object> config){
-        return new Metadata((Map<String, Object>) config.get("metadata"));
-    }
 
-
-    private static String extractName(Map<String , Object> config){
-        Metadata meta = Module.extractMetaData(config);
-        if (meta.name != null && !meta.name.equals("")){
-            return meta.name;
-        }
-        return (String) config.get("id");
-    }
-
-    @SuppressWarnings("unchecked")
-    private static String extractIdentifier(Map<String , Object> config){
-        return new Gson().toJson(config.get("identifier"));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static ArrayList<Option> extractOptions(Map<String , Object> config){
-        ArrayList<Option> result = new ArrayList<>();
-        ArrayList<Map<String, Object>> options = (ArrayList<Map<String, Object>>)config.get("options");
-        if (options != null){
-            for (Map<String, Object> option : options){
-                result.add(new Option(option));
-            }
-        }
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static ArrayList<Connectable> extractInputs(Map<String , Object> config){
-        ArrayList<Connectable> result = new ArrayList<>();
-        ArrayList<Map<String, Object>> inputs = (ArrayList<Map<String, Object>>)config.get("inputs");
-        if (inputs != null){
-            for (Map<String, Object> input : inputs){
-                result.add(new Connectable(input));
-            }
-        }
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static ArrayList<Connectable> extractOutputs(Map<String , Object> config){
-        ArrayList<Connectable> result = new ArrayList<>();
-        ArrayList<Map<String, Object>> outputs = (ArrayList<Map<String, Object>>)config.get("outputs");
-        if (outputs != null){
-            for (Map<String, Object> output : outputs){
-                result.add(new Connectable(output));
-            }
-        }
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static ArrayList<Module> extractModules(Map<String , Object> config){
-        ArrayList<Module> result = new ArrayList<>();
-        ArrayList<Map<String, Object>> modules = (ArrayList<Map<String, Object>>)config.get("modules");
-        if (modules != null){
-            for (Map<String, Object> module : modules){
-                result.add(new Module(module));
-            }
-        }
-        return result;
-    }
-
-    private static Map<String, Object> updateMetadata(Map<String , Object> config, Metadata metadata){
-        config.put("metadata", metadata.toMap());
-        return config;
-    }
 
     public String getName(){
         return name;
@@ -148,13 +76,13 @@ public class Module extends VisualElement {
 
     private void updateLayout(Map<String , Object> config){
         this.config = config;
-        this.metadata = Module.extractMetaData(this.config);
-        this.name = Module.extractName(this.config);
-        this.identifier = Module.extractIdentifier(this.config);
-        this.modules = Module.extractModules(this.config);
-        this.options = Module.extractOptions(this.config);
-        this.inputs = Module.extractInputs(this.config);
-        this.outputs = Module.extractOutputs(this.config);
+        this.metadata = Parser.extractMetaData(this.config);
+        this.name = Parser.extractName(this.config);
+        this.identifier = Parser.extractIdentifier(this.config);
+        this.modules = Parser.extractModules(this.config);
+        this.options = Parser.extractOptions(this.config);
+        this.inputs = Parser.extractInputs(this.config);
+        this.outputs = Parser.extractOutputs(this.config);
 
 
         System.out.println("[Module]: updateLayout: " + this.identifier);
@@ -310,9 +238,13 @@ public class Module extends VisualElement {
         if(selected){
             main_background.setStrokeWidth(2);
             main_background.setStroke(Color.YELLOW);
+
+            main_background.widthProperty().bind(main_layout.widthProperty().subtract(2));
+            main_background.heightProperty().bind(main_layout.heightProperty().subtract(2));
+        }else{
+            main_background.widthProperty().bind(main_layout.widthProperty());
+            main_background.heightProperty().bind(main_layout.heightProperty());
         }
-        main_background.widthProperty().bind(main_layout.widthProperty());
-        main_background.heightProperty().bind(main_layout.heightProperty());
 
         StackPane main = new StackPane();
         main.getChildren().add(main_background);
@@ -324,7 +256,22 @@ public class Module extends VisualElement {
         extern_layout.setTranslateX(metadata.pos.get("x"));
         extern_layout.setTranslateY(metadata.pos.get("y"));
 
-        main.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem menu_update = new MenuItem("_Update");
+        MenuItem menu_inverted = new MenuItem("_Invert");
+        contextMenu.getItems().addAll(menu_update, menu_inverted);
+
+        menu_inverted.setOnAction((event) -> {
+            this.metadata.inverted = !this.metadata.inverted;
+            Map<String, Object> msg = Parser.updateMetadata(this.config, this.metadata);
+            msg.put("url", "/modules/"+identifier);
+            publishEvent("CLIENT",0, Events.CHANGE, msg);
+            updateExternLayout();
+        });
+
+
+        main.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 selected = true;
                 publishEvent(identifier, 1, "select", null);
@@ -332,10 +279,9 @@ public class Module extends VisualElement {
                 e.consume();
                 updateExternLayout();
             }
-            if (e.getButton() == MouseButton.SECONDARY){
-                this.metadata.inverted = !this.metadata.inverted;
+            if(e.getButton() == MouseButton.SECONDARY) {
+                contextMenu.show(main, e.getScreenX(), e.getScreenY());
                 e.consume();
-                updateExternLayout();
             }
         });
 
@@ -360,7 +306,7 @@ public class Module extends VisualElement {
                 if (selected){
                     this.metadata.pos.put("x", extern_layout.getTranslateX());
                     this.metadata.pos.put("y", extern_layout.getTranslateY());
-                    Map<String, Object> msg = Module.updateMetadata(this.config, this.metadata);
+                    Map<String, Object> msg = Parser.updateMetadata(this.config, this.metadata);
                     msg.put("url", "/modules/"+identifier);
                     publishEvent("CLIENT",0, Events.CHANGE, msg);
                 }
