@@ -2,7 +2,6 @@ package msys.client.stages.tools.management.module;
 
 import com.google.gson.Gson;
 import javafx.event.EventHandler;
-import javafx.event.EventTarget;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -28,7 +27,7 @@ public class Module extends VisualElement {
     private ArrayList<Connectable> inputs = new ArrayList<>();
     private ArrayList<Connectable> outputs = new ArrayList<>();
     private Group extern_layout = new Group();
-    private Map<String , Object> config;
+    private Map<String , Object> config = new HashMap<>();
     private String name;
     private String identifier;
     private boolean selected = false;
@@ -43,28 +42,37 @@ public class Module extends VisualElement {
     @Override
     public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
         if (receiver != null){
-            if (receiver.equals(identifier)){
-                System.out.println("[Module]: categorizeGUIEvent ");
-                processGUIEvent(sender, event, msg);
-            }
-            else{
-                if(event.equals("select")){
+            if(event.equals("select")){
+                if (!receiver.equals(identifier)){
                     selected = false;
                     updateExternLayout();
                 }
+                return;
+            }
+            if (receiver.equals(identifier)){
+                System.out.println("[Module]: categorizeGUIEvent ");
+                processGUIEvent(sender, event, msg);
             }
         }
     }
 
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-        System.out.println("[Module]: processGUIEvent: "+event +"msg: "+  msg);
-        if (event.equals("add")){
-            modules.add(new Module(msg));
+        System.out.println("[Module]: processGUIEvent: "+event +", msg: "+  msg);
+        if (event.equals(Events.ADD)){
+            //Module nmodule = new Module(msg);
+            if (!Parser.isValid(msg)){
+                return;
+            }
+            Module module = new Module(msg);
+            modules.add(module);
+            module.changePosition(position.getX(), position.getY());
+            System.out.println("[Module] add");
             updateInternLayout();
         }
-        if (event.equals("status")){
+        if (event.equals(Events.STATUS)){
             updateLayout(msg);
+            System.out.println("[Module] status");
         }
     }
 
@@ -94,7 +102,6 @@ public class Module extends VisualElement {
         VBox inputs = new VBox();
         inputs.setPrefWidth(150);
         if (this.inputs != null){
-            System.out.println("[Module]: updateInternLayout: ");
             for (Connectable input: this.inputs){
                 inputs.getChildren().add(input.asOutput());
             }
@@ -102,6 +109,7 @@ public class Module extends VisualElement {
         //VBox.setVgrow(inputs, Priority.ALWAYS);
 
         Group modules = new Group();
+        modules.getChildren().clear();
         if (this.modules != null){
             for (Module module: this.modules){
                 modules.getChildren().add(module.getExternLayout());
@@ -125,7 +133,12 @@ public class Module extends VisualElement {
         VBox.setVgrow(sp_inputs, Priority.ALWAYS);
 
         ScrollPane sp_modules = new ScrollPane();
-        sp_modules.setContent(modules);
+        AnchorPane modules_border = new AnchorPane(modules);
+        AnchorPane.setTopAnchor(modules, 10.0);
+        AnchorPane.setRightAnchor(modules, 10.0);
+        AnchorPane.setBottomAnchor(modules, 10.0);
+        AnchorPane.setLeftAnchor(modules, 10.0);
+        sp_modules.setContent(modules_border);
         VBox.setVgrow(sp_modules, Priority.ALWAYS);
 
         ScrollPane sp_outputs = new ScrollPane();
@@ -134,9 +147,6 @@ public class Module extends VisualElement {
         sp_outputs.setContent(bp_outputs);
         VBox.setVgrow(sp_outputs, Priority.ALWAYS);
 
-
-
-        BorderPane split = new BorderPane();
         intern_layout.setLeft(new VBox(new HBox(new Label("inputs")),sp_inputs));
         intern_layout.setCenter(new VBox(sp_modules));
         intern_layout.setRight(new VBox(new HBox(new Label("outputs")),sp_outputs));
@@ -160,6 +170,7 @@ public class Module extends VisualElement {
                     Map<String, Object> msg = (Map<String, Object>) new Gson().fromJson(db.getString(), Map.class);
                     msg.put("url", "/modules/"+identifier);
                     publishEvent("Client", 0,Events.ADD, msg);
+                    //position = new Point2D(event.getSceneX() - modules_border.getLayoutX(), event.getSceneY()-modules_border.getLayoutY());
                     success = true;
                 }
                 event.setDropCompleted(success);
@@ -177,7 +188,7 @@ public class Module extends VisualElement {
     }
 
     private void updateExternLayout(){
-
+        System.out.println("[Module] updateExternLayout "+ this.identifier);
         //Borderpane
         StackPane header  = new StackPane();
         Rectangle header_bg = new Rectangle();
@@ -198,7 +209,7 @@ public class Module extends VisualElement {
         VBox inputs = new VBox();
         inputs.setPrefWidth(150);
         if (this.inputs != null){
-            System.out.println("[Module]: updateInternLayout: ");
+            System.out.println("[Module]: generate Inputs");
             for (Connectable input: this.inputs){
                 inputs.getChildren().add(input.asInput(this.metadata.inverted));
             }
@@ -206,13 +217,17 @@ public class Module extends VisualElement {
 
         VBox outputs = new VBox();
         if (this.outputs != null){
-            System.out.println("[Module]: updateInternLayout: ");
+            System.out.println("[Module]: generate Outputs");
             for (Connectable output: this.outputs){
                 outputs.getChildren().add(output.asOutput(this.metadata.inverted));
             }
         }
 
         BorderPane bottom_placement = new BorderPane();
+        if (this.metadata == null){
+            System.out.println("[Module]: Metadata is null in:" + this.identifier);
+        }
+        System.out.println("[Module]: check inverted");
         if(this.metadata.inverted){
             bottom_placement.setRight(inputs);
             bottom_placement.setLeft(outputs);
@@ -235,6 +250,7 @@ public class Module extends VisualElement {
 
         Rectangle main_background = new Rectangle();
         main_background.setFill(Color.LIGHTGREY);
+        System.out.println("[Module]: check inverted");
         if(selected){
             main_background.setStrokeWidth(2);
             main_background.setStroke(Color.YELLOW);
@@ -260,7 +276,15 @@ public class Module extends VisualElement {
 
         MenuItem menu_update = new MenuItem("_Update");
         MenuItem menu_inverted = new MenuItem("_Invert");
-        contextMenu.getItems().addAll(menu_update, menu_inverted);
+        MenuItem menu_delete = new MenuItem("_Delete");
+        contextMenu.getItems().addAll(menu_update, menu_inverted, menu_delete);
+
+        menu_update.setOnAction((event) -> {
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("url", "/modules/update/"+identifier);
+            publishEvent("CLIENT",0, Events.CHANGE, msg);
+            updateExternLayout();
+        });
 
         menu_inverted.setOnAction((event) -> {
             this.metadata.inverted = !this.metadata.inverted;
@@ -270,8 +294,15 @@ public class Module extends VisualElement {
             updateExternLayout();
         });
 
+        menu_delete.setOnAction((event) -> {
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("url", "/modules/delete/"+identifier);
+            publishEvent("CLIENT",0, Events.DELETE, msg);
+            updateExternLayout();
+        });
 
-        main.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+        main.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
             if(e.getButton() == MouseButton.PRIMARY) {
                 selected = true;
                 publishEvent(identifier, 1, "select", null);
@@ -301,19 +332,22 @@ public class Module extends VisualElement {
 
 
         main.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
-            // System.out.println("[Module]: dragg event detected!");
+            System.out.println("[Module]: dragg event detected!");
             if(e.getButton() == MouseButton.PRIMARY) {
                 if (selected){
-                    this.metadata.pos.put("x", extern_layout.getTranslateX());
-                    this.metadata.pos.put("y", extern_layout.getTranslateY());
-                    Map<String, Object> msg = Parser.updateMetadata(this.config, this.metadata);
-                    msg.put("url", "/modules/"+identifier);
-                    publishEvent("CLIENT",0, Events.CHANGE, msg);
+                    changePosition(extern_layout.getTranslateX(), extern_layout.getTranslateY());
                 }
             }
         });
 
+    }
 
+    public void changePosition(double x, double y){
+        this.metadata.pos.put("x", x);
+        this.metadata.pos.put("y", y);
+        Map<String, Object> msg = Parser.updateMetadata(this.config, this.metadata);
+        msg.put("url", "/modules/"+identifier);
+        publishEvent("CLIENT",0, Events.CHANGE, msg);
     }
 
     public Node getInternLayout(){

@@ -2,11 +2,9 @@ package msys.client.stages;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import msys.client.stages.tools.management.ModuleManger;
+import msys.client.stages.tools.management.ModuleManager;
 import msys.client.stages.tools.management.ProjectManager;
 import msys.client.stages.tools.management.PropertyManager;
 import msys.client.stages.tools.management.ToolManager;
@@ -15,7 +13,7 @@ public class Project extends Stage {
     private ProjectManager project_manager = new ProjectManager();
     private ToolManager tool_manager = new ToolManager();
     private PropertyManager property_manager = new PropertyManager();
-    private ModuleManger module_manager = new ModuleManger();
+    private ModuleManager module_manager = new ModuleManager();
 
     public Project(){
         Circle circ = new Circle(40, 40, 30);

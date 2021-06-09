@@ -1,7 +1,5 @@
 package msys.client.stages.tools.management.module;
 
-import com.sun.javafx.scene.control.InputField;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;

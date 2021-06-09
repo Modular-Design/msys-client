@@ -11,10 +11,10 @@ import msys.client.visual.VisualElement;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModuleManger extends VisualElement {
+public class ModuleManager extends VisualElement {
     private TabPane root = new TabPane();
 
-    public ModuleManger() {
+    public ModuleManager() {
         super(0, 4);
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/root/");
@@ -33,7 +33,8 @@ public class ModuleManger extends VisualElement {
 
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-        Module module = new Module(msg);
+        System.out.println("[ModuleManager]: processGUIEvent: "+event +", msg: "+  msg);
+         Module module = new Module(msg);
         Tab tab = new Tab();
         tab.setText(module.getName());
         tab.setContent(module.getInternLayout());

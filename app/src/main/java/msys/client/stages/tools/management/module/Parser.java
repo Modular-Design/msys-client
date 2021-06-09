@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class Parser {
+
+    public static boolean isValid(Map<String , Object> config){
+        return config.containsKey("id") && config.containsKey("metadata");
+    }
+
     @SuppressWarnings("unchecked")
     public static Metadata extractMetaData(Map<String , Object> config){
         return new Metadata((Map<String, Object>) config.get("metadata"));
@@ -28,7 +33,9 @@ public class Parser {
     @SuppressWarnings("unchecked")
     public static ArrayList<Option> extractOptions(Map<String , Object> config){
         ArrayList<Option> result = new ArrayList<>();
+        System.out.println("[Parser] extractOptions");
         ArrayList<Map<String, Object>> options = (ArrayList<Map<String, Object>>)config.get("options");
+        System.out.println("[Parser] extractOptions 2");
         if (options != null){
             for (Map<String, Object> option : options){
                 result.add(new Option(option));
