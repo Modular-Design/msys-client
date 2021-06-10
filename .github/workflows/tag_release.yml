@@ -52,7 +52,12 @@ jobs:
         run: ./gradlew build
 
       - name: Deploy with Gradle
-        run: ./gradlew jlinkZip
+        run: |
+        ./gradlew jlinkZip
+        ls
+        cd build
+        ls
+        cd distributions
 
       - name: Upload Linux Artifact
         if: runner.os == 'Linux'
@@ -67,7 +72,6 @@ jobs:
 
       - name: Upload Windows Artifact
         if: runner.os == 'Windows'
-        run: ls
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
