@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest] # ubuntu-latest, macos-latest
 
     steps:
       - name: Checkout code
@@ -21,7 +21,6 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: 16
-          distribution: 'adopt'
 
       - name: Grant excute permission for gradlew
         run: chmod +x gradlew
