@@ -35,7 +35,7 @@ ext {
 
 //
 version = '0.0.1'
-mainClassName = "${ext.appMainClass}" // ${ext.appModuleName}/
+mainClassName = "${ext.appModuleName}/${ext.appMainClass}" // ${ext.appModuleName}/
 def javaFXPlatform = getJavaFXPlatform()
 def javaFXVersion = "16"
 
@@ -116,4 +116,8 @@ private static String getJavaFXPlatform() {
 wrapper{
     distributionType = Wrapper.DistributionType.ALL
     gradleVersion  = "7.0.2"
+}
+
+configurations {
+    testCompile
 }
