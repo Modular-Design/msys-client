@@ -27,10 +27,12 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: .\gradlew build
+        run: |
+          ls
+          ./gradlew build
 
       - name: Build with Gradle
-        run: .\gradlew jlinkZip
+        run: ./gradlew jlinkZip
 
       - name: Upload Linux Artifact
         if: runner.os == 'Linux'
