@@ -34,6 +34,8 @@ ext {
 //
 version = '0.0.1'
 mainClassName = "${ext.appMainClass}" // ${ext.appModuleName}/
+targetCompatibility = '15'
+sourceCompatibility  = '15'
 
 repositories {
     // Use JCenter for resolving dependencies.

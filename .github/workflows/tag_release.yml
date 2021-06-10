@@ -20,17 +20,17 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: 16
+          java-version: 15
           distribution: 'adopt'
 
       - name: Grant excute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: .\gradlew build
 
       - name: Build with Gradle
-        run: ./gradlew jlinkZip
+        run: .\gradlew jlinkZip
 
       - name: Upload Linux Artifact
         if: runner.os == 'Linux'
