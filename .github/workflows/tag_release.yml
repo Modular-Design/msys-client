@@ -53,11 +53,11 @@ jobs:
 
       - name: Deploy with Gradle
         run: |
-        ./gradlew jlinkZip
-        ls
-        cd build
-        ls
-        cd distributions
+          ./gradlew jlinkZip
+          ls
+          cd build
+          ls
+          cd distributions
 
       - name: Upload Linux Artifact
         if: runner.os == 'Linux'
