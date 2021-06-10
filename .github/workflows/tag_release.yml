@@ -48,8 +48,8 @@ jobs:
       - name: Create Gradle Wrapper
         run: gradle wrapper
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      # - name: Build with Gradle
+      #   run: ./gradlew build
 
       - name: Deploy with Gradle
         run: |
@@ -58,6 +58,7 @@ jobs:
           cd build
           ls
           cd distributions
+          ls
 
       - name: Upload Linux Artifact
         if: runner.os == 'Linux'
