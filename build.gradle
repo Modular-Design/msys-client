@@ -28,7 +28,7 @@ plugins {
 ext {
     appName = "MSYS Client"
     appLauncher = "msys.client"
-    appPackaging = "msys.client"
+    appPackaging = "msys"
     appModuleName = "msys.client"
     appMainClass = "msys.client.App"
 }
