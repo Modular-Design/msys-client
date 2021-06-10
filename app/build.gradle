@@ -6,6 +6,13 @@
  * User Manual available at https://docs.gradle.org/6.8.2/userguide/building_java_projects.html
  */
 
+/*
+ * Build Processor for JavaFX:
+ *
+ * https://openjfx.io/openjfx-docs/#gradle
+ * https://github.com/brunoborges/javafx-jlink-starter-gradle
+ */
+
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
@@ -15,14 +22,22 @@ plugins {
 }
 
 
-// https://openjfx.io/openjfx-docs/#gradle
+// Application Configuration
+ext {
+    appName = "MSYS Client"
+    appLauncher = "msys"
+    appPackaging = "msys"
+    appModuleName = "msys"
+    appMainClass = "msys.client.App"
+}
+
+//
 version = '0.0.1'
-mainClassName = "$moduleName/msys.client.App"//
+mainClassName = "${ext.appMainClass}" // ${ext.appModuleName}/
 
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
-    mavenCentral()
 }
 
 dependencies {
@@ -36,6 +51,13 @@ dependencies {
     implementation 'javax.websocket:javax.websocket-all:1.1'
     //implementation 'javax.websocket:javax.websocket-client-api:1.1'
     implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '1.9'
+
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: '16'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: '16'
+
+    //jlink
+    implementation 'org.kordamp.ikonli:ikonli-javafx:11.1.0'
+    implementation 'org.kordamp.ikonli:ikonli-fontawesome-pack:11.1.0'
 }
 
 javafx {
@@ -44,13 +66,33 @@ javafx {
 }
 
 application {
-    mainModule = 'msys_client'
-    // Define the main class for the application.
-    mainClass = mainClassName
+    mainModule = appModuleName
 }
 
 jlink {
+    imageZip = project.file("${buildDir}/distributions/${appPackaging}-${javafx.platform.classifier}.zip")
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
-        name = 'msys_client'
+        name = "${appLauncher}"
+    }
+}
+
+jar {
+    manifest {
+        attributes["Main-Class"] = appMainClass
+    }
+}
+
+
+task dist {
+    dependsOn clean, jlinkZip
+    description "Calls clean and then jlinkZip [default]"
+}
+
+defaultTasks 'dist'
+
+if (project.hasProperty('debugRun') && project.debugRun as boolean) {
+    run {
+        jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=*:5005'
     }
 }
