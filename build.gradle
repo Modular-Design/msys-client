@@ -27,8 +27,8 @@ plugins {
 // Application Configuration
 ext {
     appName = "MSYS Client"
-    appLauncher = "msys"
-    appPackaging = "msys"
+    appLauncher = "msys.client"
+    appPackaging = "msys.client"
     appModuleName = "msys.client"
     appMainClass = "msys.client.App"
 }
@@ -68,7 +68,7 @@ dependencies {
 
 
 application {
-    //mainModule.set(appModuleName)
+    mainModule.set(appModuleName)
     mainClass.set(appMainClass)
 }
 
@@ -77,12 +77,6 @@ jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = "${appLauncher}"
-    }
-}
-
-jar {
-    manifest {
-        attributes["Main-Class"] = appMainClass
     }
 }
 
@@ -96,10 +90,6 @@ task dist {
 }
 
 defaultTasks 'dist'
-
-// java {
-//     modularity.inferModulePath.set(true)
-// }
 
 private static String getJavaFXPlatform() {
     def currentOS = DefaultNativePlatform.currentOperatingSystem
