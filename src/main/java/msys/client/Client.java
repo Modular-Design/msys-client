@@ -17,14 +17,16 @@ import org.apache.http.util.EntityUtils;
 import java.net.URI;
 
 
+import java.net.URISyntaxException;
+import java.util.Map;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Map;
 
 public class Client extends GUIEventClient
 {
@@ -58,11 +60,15 @@ public class Client extends GUIEventClient
             URL u = new URL( "http://"+ host +"/pubsub");
             URI uri = new URI("ws", null, u.getHost(), u.getPort(), u.getPath(), u.getQuery(), u.getRef());
             System.out.println("[Client]: "+ uri.toASCIIString());
-            WebSocketClientEndpoint client = new WebSocketClientEndpoint(uri);
-            client.addMessageHandler(new WebSocketClientEndpoint.MessageHandler() {
+            WebSocketClient client = new WebSocketClient(uri) {
+                @Override
+                public void onOpen(ServerHandshake handshakedata) {
+                    System.out.println("opened connection");
+                }
+
                 @Override
                 @SuppressWarnings("unchecked")
-                public void handleMessage(String message) {
+                public void onMessage(String message) {
                     Map<String, Object> msg = new Gson().fromJson(message, Map.class);//TODO unsafe
                     // Read envelope with address
                     String topic = (String) msg.get("topic");
@@ -75,9 +81,23 @@ public class Client extends GUIEventClient
                     if (everything_ok){
                         Platform.runLater(() -> publishEvent(receiver,1, topic, map));
                     }
-                    //*/
                 }
-            });
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    // The codecodes are documented in class org.java_websocket.framing.CloseFrame
+                    System.out.println(
+                            "Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: "
+                                    + reason);
+                }
+
+                @Override
+                public void onError(Exception ex) {
+                    ex.printStackTrace();
+                    // if the error is fatal then onClose will be called additionally
+                }
+            };
+            client.connect();
 
         } catch (Exception e) {
             e.printStackTrace();
