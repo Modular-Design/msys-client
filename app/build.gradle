@@ -79,6 +79,10 @@ jlink {
     }
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '7.0.2'
+}
+
 jar {
     manifest {
         attributes["Main-Class"] = appMainClass
