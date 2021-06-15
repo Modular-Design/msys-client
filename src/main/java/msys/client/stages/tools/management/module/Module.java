@@ -204,8 +204,6 @@ public class Module extends VisualElement {
 
 
 
-        //split.setCenter(sp_modules);
-        //split.setLeft(outputs);
         VBox.setVgrow(sp_inputs, Priority.ALWAYS);
         //extern_layout.getChildren().add(new VBox(split));
 
