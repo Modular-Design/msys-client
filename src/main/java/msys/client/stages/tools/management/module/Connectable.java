@@ -8,7 +8,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
@@ -25,14 +27,19 @@ public class Connectable extends VisualElement {
     private Metadata metadata;
     private String identifier;
     private Polygon in_shape = new Polygon();
+    private Circle in_center = new Circle();
     private Rectangle out_shape = new Rectangle(15, 15);
+    private Circle out_center = new Circle();
     private Label name = new Label("TEST");
     private HBox input_layout = new HBox();
     private HBox output_layout = new HBox();
 
 
-    public Connectable(Map<String, Object> config) {
-        super(0,2);
+    public Connectable(int handler_no, Map<String, Object> config) {
+        super(Parser.extractIdentifier(config), handler_no,2);
+
+        in_center.setFill(Color.RED);
+        out_center.setFill(Color.RED);
 
         updateLayout(config);
 
@@ -43,6 +50,9 @@ public class Connectable extends VisualElement {
         out_shape.setFill(Color.GREEN);
         out_shape.setStrokeWidth(1);
         out_shape.setStroke(Color.BLACK);
+
+        addEvents(input_layout);
+        addEvents(output_layout);
     }
 
     @Override
@@ -66,7 +76,9 @@ public class Connectable extends VisualElement {
     public Node asInput(boolean inverted){
 
         HBox layout;
+        StackPane stack = new StackPane();
         in_shape.getPoints().clear();
+        stack.getChildren().addAll(in_center, in_shape);
         if (inverted){
             // inverted right
             in_shape.getPoints().addAll(
@@ -74,7 +86,8 @@ public class Connectable extends VisualElement {
                     0.0, 0.0,
                     0.0, 15.0
             );
-            layout = new HBox(name, in_shape);
+
+            layout = new HBox(name, stack);
             input_layout.setAlignment(Pos.TOP_RIGHT);
         } else {
             // normal left
@@ -83,7 +96,7 @@ public class Connectable extends VisualElement {
                     0.0, 0.0,
                     0.0, 15.0
             );
-            layout = new HBox(in_shape, name);
+            layout = new HBox(stack, name);
             input_layout.setAlignment(Pos.TOP_LEFT);
         }
         input_layout.getChildren().clear();
@@ -92,18 +105,18 @@ public class Connectable extends VisualElement {
     }
 
     @SuppressWarnings("unchecked")
-    private void addEvents(Group group){
-        group.addEventHandler(MouseEvent.DRAG_DETECTED, e -> {
-            Dragboard db = group.startDragAndDrop(TransferMode.MOVE);
+    private void addEvents(Node node){
+        node.addEventHandler(MouseEvent.DRAG_DETECTED, e -> {
+            Dragboard db = node.startDragAndDrop(TransferMode.MOVE);
             ClipboardContent content = new ClipboardContent();
             content.putString(this.identifier);
             db.setContent(content);
             e.consume();
         });
 
-        group.addEventHandler(MouseEvent.MOUSE_DRAGGED, Event::consume);
+        node.addEventHandler(MouseEvent.MOUSE_DRAGGED, Event::consume);
 
-        group.addEventHandler(DragEvent.DRAG_OVER, e -> {
+        node.addEventHandler(DragEvent.DRAG_OVER, e -> {
             Dragboard db = e.getDragboard();
             if (db.hasString()) {
                 e.acceptTransferModes(TransferMode.MOVE);
@@ -111,15 +124,16 @@ public class Connectable extends VisualElement {
             e.consume();
         });
 
-        group.addEventHandler(DragEvent.DRAG_DROPPED, e -> {
+        node.addEventHandler(DragEvent.DRAG_DROPPED, e -> {
             Dragboard db = e.getDragboard();
             boolean success = false;
             if (db.hasString()) {
                 ArrayList<String> from = (ArrayList<String>)new Gson().fromJson(this.identifier, ArrayList.class);;
                 if (from != null){
                     System.out.println("Dropped: " + db.getString());
+                    System.out.println("Onto: " + this.identifier);
                     Map<String, Object> msg = new HashMap<>();
-                    msg.put("from", from);
+                    msg.put("from", (ArrayList<String>) new Gson().fromJson(db.getString(), ArrayList.class));
                     msg.put("to", (ArrayList<String>)new Gson().fromJson(this.identifier, ArrayList.class));
                     msg.put("url", "/modules/connect");
                     publishEvent("Client",0, Events.CONNECT, msg);
@@ -138,10 +152,12 @@ public class Connectable extends VisualElement {
 
     public Node asOutput(boolean inverted){
         HBox layout;
+        StackPane stack = new StackPane();
+        stack.getChildren().addAll(out_center, out_shape);
         if (inverted){
             layout= new HBox(out_shape, name);
         } else {
-            layout= new HBox(name, out_shape);
+            layout= new HBox(name, stack);
         }
         output_layout.getChildren().clear();
         output_layout.getChildren().addAll(layout);
@@ -150,6 +166,14 @@ public class Connectable extends VisualElement {
 
     public Node asOutput(){
         return asOutput(false);
+    }
+
+    public Circle getInputCenter(){
+        return in_center;
+    }
+
+    public Circle getOutputCenter(){
+        return out_center;
     }
 
 

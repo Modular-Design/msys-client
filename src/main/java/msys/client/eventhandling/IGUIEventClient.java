@@ -24,4 +24,6 @@ public interface IGUIEventClient extends AutoCloseable {
      * @param msg
      */
     void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg);
+
+    String getID();
 }

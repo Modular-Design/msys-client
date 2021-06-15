@@ -21,8 +21,8 @@ public class Option extends VisualElement {
      *
      */
     @SuppressWarnings("unchecked")
-    public Option(Map<String, Object> config) {
-        super(0, 1);
+    public Option(int handler_no, Map<String, Object> config) {
+        super(null, handler_no, 1);
         this.config = config;
 
         VBox layout = new VBox();

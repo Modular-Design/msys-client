@@ -8,6 +8,7 @@ public class GUIEventHandler {
 
     private static Vector<GUIEventHandler> _handler = new Vector<>();
     private ConcurrentSkipListMap<Integer,Vector<IGUIEventClient>> _priorities = new ConcurrentSkipListMap<>();
+    private Map<String, IGUIEventClient> _members = new HashMap<>();
 
     /**
      *  level 0: Client
@@ -28,6 +29,10 @@ public class GUIEventHandler {
             clients = new Vector<>();
             clients.add(client);
             _priorities.put(level, clients);
+        }
+        var id = client.getID();
+        if (id != null){
+            _members.put(client.getID(),client);
         }
     }
 
@@ -75,6 +80,10 @@ public class GUIEventHandler {
             _handler.add(new GUIEventHandler());
         }
         return _handler.get(index);
+    }
+
+    public Map<String, IGUIEventClient> getMembers(){
+        return _members;
     }
 }
 
