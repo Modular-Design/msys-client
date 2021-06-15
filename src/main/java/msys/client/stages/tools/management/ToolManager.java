@@ -30,8 +30,8 @@ public class ToolManager extends VisualElement {
     private Map<String, Map<String,Object>> extension_overview = new HashMap<>();
     private final GUIEventHandler _eventHandler = GUIEventHandler.getEventHandler(0);
 
-    public ToolManager(){
-        super(0, 4);
+    public ToolManager(int handler_no){
+        super("ToolManager", handler_no, 4);
         extentsions.setAlignment(Pos.TOP_CENTER);
         fast_access.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -67,16 +67,6 @@ public class ToolManager extends VisualElement {
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/");
         publishEvent("Client", 0,Events.GET, map);
-    }
-
-    @Override
-    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
-        // never list process besides  direct messages
-        if (receiver != null){
-            if (receiver.equals("ToolManager")){
-                processGUIEvent(sender, event, msg);
-            }
-        }
     }
 
     @Override

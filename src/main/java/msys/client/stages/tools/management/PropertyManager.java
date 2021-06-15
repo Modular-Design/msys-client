@@ -10,20 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PropertyManager extends VisualElement {
-    public PropertyManager(){
-        super(0, 4);
+    public PropertyManager(int handler_no){
+        super("PropertyManager", handler_no, 4);
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/root/");
         publishEvent("client",0,Events.GET, map);
-    }
-
-    @Override
-    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
-        if (receiver != null){
-            if (receiver.equals("ProjectManager")){
-                processGUIEvent(sender, event, msg);
-            }
-        }
     }
 
     @Override
