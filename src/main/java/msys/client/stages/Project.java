@@ -10,10 +10,10 @@ import msys.client.stages.tools.management.PropertyManager;
 import msys.client.stages.tools.management.ToolManager;
 
 public class Project extends Stage {
-    private ProjectManager project_manager = new ProjectManager(0);
-    private ToolManager tool_manager = new ToolManager(0);
-    private PropertyManager property_manager = new PropertyManager(0);
-    private ModuleManager module_manager = new ModuleManager(0);
+    private ProjectManager project_manager = new ProjectManager();
+    private ToolManager tool_manager = new ToolManager();
+    private PropertyManager property_manager = new PropertyManager();
+    private ModuleManager module_manager = new ModuleManager();
 
     public Project(){
         Circle circ = new Circle(40, 40, 30);

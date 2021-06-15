@@ -14,8 +14,8 @@ import java.util.Map;
 public class ModuleManager extends VisualElement {
     private TabPane root = new TabPane();
 
-    public ModuleManager(int handler_no) {
-        super("ModuleManager", handler_no, 4);
+    public ModuleManager() {
+        super(0, 4);
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/root/");
         publishEvent("client",0, Events.GET, map);
@@ -23,9 +23,18 @@ public class ModuleManager extends VisualElement {
     }
 
     @Override
+    public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
+        if (receiver != null){
+            if (receiver.equals("ModuleManager")){
+                processGUIEvent(sender, event, msg);
+            }
+        }
+    }
+
+    @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
         System.out.println("[ModuleManager]: processGUIEvent: "+event +", msg: "+  msg);
-         Module module = new Module(getHandlerNumber(), msg);
+         Module module = new Module(msg);
         Tab tab = new Tab();
         tab.setText(module.getName());
         tab.setContent(module.getInternLayout());

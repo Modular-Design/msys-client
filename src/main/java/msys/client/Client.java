@@ -40,7 +40,7 @@ public class Client extends GUIEventClient
      * @param endpoint the Publischer-Subscriber-Endpoint typically "/pubsub"
      */
     public Client(String url, String endpoint){
-        super("Client", 0, 0);
+        super(0, 0);
 
         //url is <protocol>//<host>
         String[] parts= url.split("://");
@@ -177,6 +177,16 @@ public class Client extends GUIEventClient
         // placeholder mabye later for reloader
     }
 
+    /**
+     * listens to the Publisher and Subscriber-Endpoint
+     */
+    @SuppressWarnings("unchecked")
+    private void listen(){
+        while (!Thread.currentThread().isInterrupted()) {
+
+        }
+    }
+
     @Override
     public void close() throws Exception {
         super.close();
@@ -192,7 +202,6 @@ public class Client extends GUIEventClient
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
         var result = request(event,  msg);
-        System.out.println("[Client]: " + result.toString());
         if (result != null){
             if (sender != null){
                 sender.processGUIEvent(this, event, result);

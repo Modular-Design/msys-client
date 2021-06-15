@@ -9,6 +9,4 @@ public class Events
     public static final String DELETE = "delete";
     public static final String GET = "get";
     public static final String STATUS = "status";
-    public static final String RELOAD = "reload";
-    public static final String SELECT = "select";
 }

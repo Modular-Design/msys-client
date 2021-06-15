@@ -18,7 +18,7 @@ public class Tool extends VisualElement {
     private Button root = new Button();
 
     public Tool(Map<String, String> content) {
-        super("Tool", 0, -1);
+        super(0, -1);
         this.content = content;
         root.setText(content.get("name"));
 

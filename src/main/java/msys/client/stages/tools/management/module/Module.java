@@ -26,7 +26,6 @@ public class Module extends VisualElement {
     private ArrayList<Module> modules = new ArrayList<>();
     private ArrayList<Connectable> inputs = new ArrayList<>();
     private ArrayList<Connectable> outputs = new ArrayList<>();
-    private ArrayList<Connection> connections = new ArrayList<>();
     private Group extern_layout = new Group();
     private Map<String , Object> config = new HashMap<>();
     private String name;
@@ -34,24 +33,24 @@ public class Module extends VisualElement {
     private boolean selected = false;
     private Point2D position = new Point2D(0,0);
     private Metadata metadata;
-    private String parentID;
 
-    public Module(int handler_no, Map<String, Object> config) {
-        super(Parser.extractIdentifier(config), handler_no, 3);
+    public Module(Map<String, Object> config) {
+        super(0, 3);
         updateLayout(config);
     }
 
     @Override
     public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
         if (receiver != null){
-            if(event.equals(Events.SELECT)){
+            if(event.equals("select")){
                 if (!receiver.equals(identifier)){
                     selected = false;
                     updateExternLayout();
                 }
                 return;
             }
-            if (receiver.equals(getID())){
+            if (receiver.equals(identifier)){
+                System.out.println("[Module]: categorizeGUIEvent ");
                 processGUIEvent(sender, event, msg);
             }
         }
@@ -59,32 +58,25 @@ public class Module extends VisualElement {
 
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-        System.out.println("[Module]: processGUIEvent: name: "+ name +", event: "+event +", msg: "+  msg);
+        System.out.println("[Module]: processGUIEvent: "+event +", msg: "+  msg);
         if (event.equals(Events.ADD)){
             //Module nmodule = new Module(msg);
             if (!Parser.isValid(msg)){
                 return;
             }
-            Module module = new Module(getHandlerNumber(), msg);
+            Module module = new Module(msg);
             modules.add(module);
             module.changePosition(position.getX(), position.getY());
+            System.out.println("[Module] add");
             updateInternLayout();
         }
         if (event.equals(Events.STATUS)){
             updateLayout(msg);
-        }
-        if (event.equals(Events.CHANGE)){
-            if (!Parser.isValid(msg)){
-                return;
-            }
-            updateLayout(msg);
-        }
-        if (event.equals(Events.RELOAD)){
-            System.out.println("[Module] reload");
-            this.connections = Parser.extractConnections(getHandlerNumber(), this.config);
-            updateInternLayout();
+            System.out.println("[Module] status");
         }
     }
+
+
 
     public String getName(){
         return name;
@@ -92,26 +84,16 @@ public class Module extends VisualElement {
 
     private void updateLayout(Map<String , Object> config){
         this.config = config;
-
         this.metadata = Parser.extractMetaData(this.config);
         this.name = Parser.extractName(this.config);
         this.identifier = Parser.extractIdentifier(this.config);
-
-        int last = this.identifier.lastIndexOf(",");
-        if (last == -1){
-            this.parentID = null;
-        }else {
-            this.parentID = this.identifier.substring(0, last) + "]";
-        }
-
-        this.modules = Parser.extractModules(getHandlerNumber(), this.config);
-        this.options = Parser.extractOptions(getHandlerNumber(), this.config);
-        this.inputs = Parser.extractInputs(getHandlerNumber(), this.config);
-        this.outputs = Parser.extractOutputs(getHandlerNumber(), this.config);
-        this.connections = Parser.extractConnections(getHandlerNumber(), this.config);
+        this.modules = Parser.extractModules(this.config);
+        this.options = Parser.extractOptions(this.config);
+        this.inputs = Parser.extractInputs(this.config);
+        this.outputs = Parser.extractOutputs(this.config);
 
 
-        System.out.println("[Module]: updateLayout: " + this.name);
+        System.out.println("[Module]: updateLayout: " + this.identifier);
         updateInternLayout();
         updateExternLayout();
     }
@@ -126,20 +108,14 @@ public class Module extends VisualElement {
         }
         //VBox.setVgrow(inputs, Priority.ALWAYS);
 
-        Group module_connectiion = new Group();
-        module_connectiion.getChildren().clear();
-
-        if (this.connections != null){
-            for (Connection connection: this.connections){
-                module_connectiion.getChildren().add(connection.getVisual());
-            }
-        }
-
+        Group modules = new Group();
+        modules.getChildren().clear();
         if (this.modules != null){
             for (Module module: this.modules){
-                module_connectiion.getChildren().add(module.getExternLayout());
+                modules.getChildren().add(module.getExternLayout());
             }
         }
+
 
         VBox outputs = new VBox(new Button("output"));
         outputs.setPrefWidth(150);
@@ -150,17 +126,18 @@ public class Module extends VisualElement {
         }
 
         ScrollPane sp_inputs = new ScrollPane();
+        BorderPane bp_inputs = new BorderPane();
+        //bp_inputs.setRight(inputs);
         inputs.setAlignment(Pos.TOP_LEFT);
         sp_inputs.setContent(inputs);
         VBox.setVgrow(sp_inputs, Priority.ALWAYS);
 
-
         ScrollPane sp_modules = new ScrollPane();
-        AnchorPane modules_border = new AnchorPane(module_connectiion);
-        AnchorPane.setTopAnchor(module_connectiion, 10.0);
-        AnchorPane.setRightAnchor(module_connectiion, 10.0);
-        AnchorPane.setBottomAnchor(module_connectiion, 10.0);
-        AnchorPane.setLeftAnchor(module_connectiion, 10.0);
+        AnchorPane modules_border = new AnchorPane(modules);
+        AnchorPane.setTopAnchor(modules, 10.0);
+        AnchorPane.setRightAnchor(modules, 10.0);
+        AnchorPane.setBottomAnchor(modules, 10.0);
+        AnchorPane.setLeftAnchor(modules, 10.0);
         sp_modules.setContent(modules_border);
         VBox.setVgrow(sp_modules, Priority.ALWAYS);
 
@@ -170,7 +147,6 @@ public class Module extends VisualElement {
         sp_outputs.setContent(bp_outputs);
         VBox.setVgrow(sp_outputs, Priority.ALWAYS);
 
-        intern_layout.getChildren().clear();
         intern_layout.setLeft(new VBox(new HBox(new Label("inputs")),sp_inputs));
         intern_layout.setCenter(new VBox(sp_modules));
         intern_layout.setRight(new VBox(new HBox(new Label("outputs")),sp_outputs));
@@ -212,6 +188,7 @@ public class Module extends VisualElement {
     }
 
     private void updateExternLayout(){
+        System.out.println("[Module] updateExternLayout "+ this.identifier);
         //Borderpane
         StackPane header  = new StackPane();
         Rectangle header_bg = new Rectangle();
@@ -232,6 +209,7 @@ public class Module extends VisualElement {
         VBox inputs = new VBox();
         inputs.setPrefWidth(150);
         if (this.inputs != null){
+            System.out.println("[Module]: generate Inputs");
             for (Connectable input: this.inputs){
                 inputs.getChildren().add(input.asInput(this.metadata.inverted));
             }
@@ -239,6 +217,7 @@ public class Module extends VisualElement {
 
         VBox outputs = new VBox();
         if (this.outputs != null){
+            System.out.println("[Module]: generate Outputs");
             for (Connectable output: this.outputs){
                 outputs.getChildren().add(output.asOutput(this.metadata.inverted));
             }
@@ -248,7 +227,7 @@ public class Module extends VisualElement {
         if (this.metadata == null){
             System.out.println("[Module]: Metadata is null in:" + this.identifier);
         }
-
+        System.out.println("[Module]: check inverted");
         if(this.metadata.inverted){
             bottom_placement.setRight(inputs);
             bottom_placement.setLeft(outputs);
@@ -271,7 +250,7 @@ public class Module extends VisualElement {
 
         Rectangle main_background = new Rectangle();
         main_background.setFill(Color.LIGHTGREY);
-
+        System.out.println("[Module]: check inverted");
         if(selected){
             main_background.setStrokeWidth(2);
             main_background.setStroke(Color.YELLOW);
@@ -360,8 +339,6 @@ public class Module extends VisualElement {
                 }
             }
         });
-
-        publishEvent(parentID, 3, Events.RELOAD, null);
 
     }
 
