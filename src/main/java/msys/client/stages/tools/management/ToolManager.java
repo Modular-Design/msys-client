@@ -1,17 +1,16 @@
 package msys.client.stages.tools.management;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import msys.client.Client;
+import msys.client.communication.NetworkEvents;
 import msys.client.eventhandling.Events;
 import msys.client.eventhandling.GUIEventHandler;
 import msys.client.eventhandling.IGUIEventClient;
+import msys.client.eventhandling.Receivers;
 import msys.client.stages.tools.management.tool.Tool;
 import msys.client.visual.VisualElement;
 
@@ -66,7 +65,7 @@ public class ToolManager extends VisualElement {
 
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/");
-        publishEvent("Client", 0,Events.GET, map);
+        publishEvent(Receivers.Client, 0, NetworkEvents.GET, map);
     }
 
     @Override

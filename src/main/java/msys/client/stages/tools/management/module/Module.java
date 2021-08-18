@@ -11,6 +11,7 @@ import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import msys.client.communication.NetworkEvents;
 import msys.client.eventhandling.Events;
 import msys.client.eventhandling.IGUIEventClient;
 import msys.client.visual.VisualElement;
@@ -316,7 +317,7 @@ public class Module extends VisualElement {
         menu_delete.setOnAction((event) -> {
             Map<String, Object> msg = new HashMap<>();
             msg.put("url", "/modules/delete/"+identifier);
-            publishEvent("CLIENT",0, Events.DELETE, msg);
+            publishEvent("CLIENT",0, NetworkEvents.DELETE, msg);
             updateExternLayout();
         });
 

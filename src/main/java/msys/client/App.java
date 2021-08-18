@@ -3,22 +3,31 @@
  */
 package msys.client;
 
-
 import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.shape.Circle;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
+import msys.client.communication.Client;
 import msys.client.stages.Login;
 import msys.client.stages.Project;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 public class App extends Application {
-    private Client client = new Client("http://127.0.0.1:8000", "/pubsub");
+    private Client client = new Client();
     private Login login_stage= new Login();
-    private Project project_stage= new Project();
+    private Project project_stage;
+    public static PropertiesConfiguration config = new PropertiesConfiguration();
 
     public void start(Stage stage) {
+        Configurations configurations = new Configurations();
+        try {
+            var file = getClass().getResource("/config.properties").toExternalForm();
+            System.out.println(file);
+            config = configurations.properties(file);
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+        }
+        project_stage = new Project();
         //It will show the output
         project_stage.show();
         //It will show the output until stage object closed

@@ -2,8 +2,10 @@ package msys.client.stages.tools.management;
 
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
+import msys.client.communication.NetworkEvents;
 import msys.client.eventhandling.Events;
 import msys.client.eventhandling.IGUIEventClient;
+import msys.client.eventhandling.Receivers;
 import msys.client.visual.VisualElement;
 
 import java.util.HashMap;
@@ -14,7 +16,7 @@ public class PropertyManager extends VisualElement {
         super("PropertyManager", handler_no, 4);
         Map<String, Object> map = new HashMap<>();
         map.put("url","/modules/root/");
-        publishEvent("client",0,Events.GET, map);
+        publishEvent(Receivers.Client,0, NetworkEvents.GET, map);
     }
 
     @Override

@@ -9,14 +9,17 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyCombination;
+import msys.client.communication.NetworkEvents;
 import msys.client.eventhandling.Events;
 import msys.client.eventhandling.IGUIEventClient;
+import msys.client.eventhandling.Receivers;
 import msys.client.visual.VisualElement;
+import msys.client.visual.VisualRemoteElement;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProjectManager extends VisualElement {
+public class ProjectTaskBar extends VisualRemoteElement {
     private MenuBar root = new MenuBar();
     private Menu fileMenu = new Menu("_File");
     private MenuItem open = new MenuItem("Open");
@@ -35,8 +38,8 @@ public class ProjectManager extends VisualElement {
     private Menu helpMenu = new Menu("_Help");
     private MenuItem about = new MenuItem("About");
 
-    public ProjectManager(int handler_no) {
-        super("ProjectManager", handler_no, 4);
+    public ProjectTaskBar(int handler_no) {
+        super(Receivers.ProjectManager, handler_no, 4);
         // Add keyboard accelerators for the File menu.
         open.setAccelerator(KeyCombination.keyCombination("shortcut+O"));
         close.setAccelerator(KeyCombination.keyCombination("shortcut+C"));
@@ -45,22 +48,16 @@ public class ProjectManager extends VisualElement {
 
         fileMenu.getItems().addAll(open, close, save, new SeparatorMenuItem(), exit);
 
-        //Add File menu to the menu bar.
+        // Add File menu to the menu bar.
         root.getMenus().add(fileMenu);
-
         colorsMenu.getItems().addAll(red, green, blue);
         optionsMenu.getItems().add(colorsMenu);
 
 
-// Create the Priority submenu.
-
-
+        // Create the Priority submenu.
         Menu priorityMenu = new Menu("Priority");
-
         MenuItem high = new MenuItem("High");
-
         MenuItem low = new MenuItem("Low");
-
         priorityMenu.getItems().
 
                 addAll(high, low);
@@ -70,16 +67,11 @@ public class ProjectManager extends VisualElement {
                 add(priorityMenu);
 
 
-// Add a separator.
-
-
+        // Add a separator.
         optionsMenu.getItems().add(new SeparatorMenuItem());
 
-
         //Create the Reset menu item.
-
         MenuItem reset = new MenuItem("Reset");
-
         optionsMenu.getItems().
 
                 add(reset);
@@ -88,9 +80,7 @@ public class ProjectManager extends VisualElement {
         //Add Options menu to the menu bar.
         root.getMenus().add(optionsMenu);
 
-
         //Create the Help menu.
-
         helpMenu.getItems().add(about);
 
 
@@ -125,11 +115,6 @@ public class ProjectManager extends VisualElement {
         reset.setOnAction(MEHandler);
 
         about.setOnAction(MEHandler);
-
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("url","/extensions/");
-        publishEvent("Client", 0,Events.GET, map);
     }
 
     @Override
@@ -140,5 +125,13 @@ public class ProjectManager extends VisualElement {
     @Override
     public Node getVisual() {
         return root;
+    }
+
+    @Override
+    public void setHost(String host) {
+        super.setHost(host);
+        Map<String, Object> map = new HashMap<>();
+        map.put("url",this.getHost()+"/resources");
+        publishEvent(Receivers.Client, 0, NetworkEvents.GET, map);
     }
 }
