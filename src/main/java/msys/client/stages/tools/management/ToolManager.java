@@ -13,24 +13,34 @@ import msys.client.eventhandling.IGUIEventClient;
 import msys.client.eventhandling.Receivers;
 import msys.client.stages.tools.management.tool.Tool;
 import msys.client.visual.VisualElement;
+import msys.client.visual.VisualRemoteElement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ToolManager extends VisualElement {
-    private HBox root = new HBox();
-    private ToolBar vertical_bar = new ToolBar();
-    private VBox  extentsions = new VBox();
-    private VBox  fast_access = new VBox();
-    private VBox expandable  = new VBox();
-    private BorderPane expandable_header = new BorderPane();
-    private VBox tool_box = new VBox();
-    private Map<String, Map<String,Object>> extension_overview = new HashMap<>();
+public class ToolManager extends VisualRemoteElement {
+    private final HBox root = new HBox();
+    private final ToolBar vertical_bar = new ToolBar();
+    private final VBox  extentsions = new VBox();
+    private final VBox  fast_access = new VBox();
+    private final VBox expandable  = new VBox();
+    private final BorderPane expandable_header = new BorderPane();
+    private final VBox tool_box = new VBox();
+
+    private final Map<String, String> endpoints = new HashMap<>();
+    private final Map<String,Map<String,Tool>> tools = new HashMap<>();
+
     private final GUIEventHandler _eventHandler = GUIEventHandler.getEventHandler(0);
 
     public ToolManager(int handler_no){
         super("ToolManager", handler_no, 4);
+
+        endpoints.put("/resources", "Nodes");
+        endpoints.put("/factory/all", "Modules");
+
+        generate_menus(endpoints);
+
         extentsions.setAlignment(Pos.TOP_CENTER);
         fast_access.setAlignment(Pos.BOTTOM_CENTER);
 
@@ -61,47 +71,79 @@ public class ToolManager extends VisualElement {
         expandable.setPrefWidth(150);
         expandable.setVisible(false);
         expandable.setManaged(false);
-        root.getChildren().add(expandable);
 
-        Map<String, Object> map = new HashMap<>();
-        map.put("url","/modules/");
-        publishEvent(Receivers.Client, 0, NetworkEvents.GET, map);
+        root.getChildren().add(expandable);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-        ArrayList<Map<String,String>> extentions = (ArrayList<Map<String,String>>)msg.get("modules");
+        if (msg.get("url") == null){
+            return;
+        }
+        String url = (String) msg.get("url");
+        for (String endpoint : endpoints.keySet()){
+            if (!url.equals(this.getHost()+endpoint)){
+                continue;
+            }
 
+            if(tools.get(endpoint) == null){
+                tools.put(endpoint, new HashMap<>());
+            }else{
+                tools.get(endpoint).clear();
+            }
+
+            for (String key: msg.keySet()){
+                if(key.equals("url")){
+                    continue;
+                }
+
+                Map<String, String> content = (Map<String, String>) msg.get(key);
+                content.put("name", content.get("name")+"("+key+")");
+                content.put("key", key);
+                if (tools.get(endpoint).get(key) == null){
+                    var tool = new Tool(content);
+                    tools.get(endpoint).put(key, tool);
+                    tool.setHost(this.getHost());
+                }
+            }
+        }
+    }
+
+    private void generate_menus(Map<String, String> map){
         int counter = 0;
-        for (Map<String,String> elem: extentions){
-            String pkg = elem.get("package");
-            if (extension_overview.get(pkg) == null){
-                Map<String,Object> map = new HashMap<>();
-                Button menu = new Button("_"+(counter++)+":"+pkg);
-                menu.setOnAction(btn_event -> {
-                    ArrayList<Tool> tools = (ArrayList<Tool>) extension_overview.get(pkg).get("tools");
-                    tool_box.getChildren().clear();
-                    for (Tool tool : tools) {
+        for (String key: map.keySet()){
+            Button menu = new Button("_"+(counter++)+":"+ map.get(key));
+            menu.setOnAction(btn_event -> {
+                tool_box.getChildren().clear();
+                var menu_tools = tools.get(key);
+                if(menu_tools!= null){
+                    for (Tool tool: menu_tools.values()) {
                         tool_box.getChildren().add(tool.getVisual());
                     }
-                    expandable.setVisible(true);
-                    expandable.setManaged(true);
-                });
-                menu.setRotate(-90);
-                extentsions.getChildren().add(new Group(menu));
-                map.put("menu", menu);
-                map.put("tools", new ArrayList<Tool>());
-                extension_overview.put(pkg, map);
-            }
-            ((ArrayList<Tool>)extension_overview.get(pkg).get("tools")).add(new Tool(elem));
+                }
+                expandable.setVisible(true);
+                expandable.setManaged(true);
+            });
+            menu.setRotate(-90);
+            extentsions.getChildren().add(new Group(menu));
         }
-
-
     }
 
     @Override
     public Node getVisual() {
         return root;
+    }
+
+    @Override
+    public void setHost(String host) {
+        super.setHost(host);
+
+        for (String endpoint: endpoints.keySet()){
+            Map<String, Object> map = new HashMap<>();
+            map.put("url",this.getHost()+endpoint);
+            publishEvent(Receivers.Client, 0, NetworkEvents.GET, map);
+        }
+
     }
 }

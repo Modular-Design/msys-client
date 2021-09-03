@@ -2,7 +2,6 @@ package msys.client.communication;
 
 import com.google.gson.Gson;
 import javafx.application.Platform;
-import msys.client.eventhandling.GUIEventClient;
 import msys.client.eventhandling.IGUIEventClient;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -12,21 +11,11 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 public class WebSocketConnector extends WebSocketClient {
-    private final GUIEventClient eventClient;
+    private final IGUIEventClient eventClient;
 
-    public WebSocketConnector(String uri) throws URISyntaxException {
+    public WebSocketConnector(IGUIEventClient parent,String uri) throws URISyntaxException {
         super(new URI(uri));
-        this.eventClient = new GUIEventClient("Client", 0, 0) {
-            @Override
-            public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
-
-            }
-
-            @Override
-            public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-
-            }
-        };
+        this.eventClient = parent;
     }
 
     @Override
@@ -44,7 +33,7 @@ public class WebSocketConnector extends WebSocketClient {
         String receiver = new Gson().toJson(msg.get("receiver"));
         Map<String, Object> map = (Map<String, Object>)msg.get("content");
 
-        Platform.runLater(() -> eventClient.publishEvent(receiver,1, topic, map));
+        Platform.runLater(() -> eventClient.publishEvent(receiver, 1, topic, map));
     }
 
     @Override

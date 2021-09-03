@@ -95,12 +95,13 @@ public class Client extends GUIEventClient
         System.out.println("[Client]: send request and receive response");
         CloseableHttpClient httpClient = HttpClients.createDefault();
         try (CloseableHttpResponse response = httpClient.execute(request)) {
-            System.out.println(response);
-            System.out.println(response.getEntity());
             String json = EntityUtils.toString(response.getEntity());
 
             try {
-                return new Gson().fromJson(json, Map.class);//TODO unsafe
+                System.out.println("[Client/JSON]: "+ json);
+                var msg = new Gson().fromJson(json, Map.class);//TODO unsafe
+                msg.put("url", url);
+                return msg;
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -122,7 +123,7 @@ public class Client extends GUIEventClient
 
     @Override
     public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
-        if (level == 0 || receiver.equals("Client")){
+        if (receiver.equals(Receivers.Client)){
             processGUIEvent(sender, event, msg);
         }
     }
@@ -130,8 +131,8 @@ public class Client extends GUIEventClient
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
         var result = request(event,  msg);
-        System.out.println("[Client]: " + result.toString());
         if (result != null){
+            System.out.println("[Client]: " + result);
             if (sender != null){
                 sender.processGUIEvent(this, event, result);
             }else {

@@ -3,17 +3,17 @@ package msys.client.stages.tools.management.tool;
 import com.google.gson.Gson;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
+import msys.client.communication.NetworkEvents;
 import msys.client.eventhandling.Events;
 import msys.client.eventhandling.IGUIEventClient;
-import msys.client.visual.VisualElement;
+import msys.client.eventhandling.Receivers;
+import msys.client.visual.VisualRemoteElement;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class Tool extends VisualElement {
+public class Tool extends VisualRemoteElement {
     private Map<String, String> content;
     private Button root = new Button();
 
@@ -31,11 +31,24 @@ public class Tool extends VisualElement {
             e.consume();
         });
 
+        root.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            if(e.getButton().equals(MouseButton.PRIMARY)){
+                if(e.getClickCount() == 2){
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("host", this.getHost());
+                    map.put("key", this.content.get("key"));
+                    publishEvent(Receivers.InstanceManager, 0, Events.OPEN, map);
+                    e.consume();
+                }
+            }
+        });
+
+
     }
 
     @Override
     public void categorizeGUIEvent(IGUIEventClient sender, String receiver, Integer level, String event, Map<String, Object> msg) {
-
+        System.out.println("[Tool]: " + msg.toString());
     }
 
     @Override

@@ -9,6 +9,7 @@ public class Events
     public static final String CONNECT = "connect";
     public static final String CHANGE = "change";
     public static final String UPDATE = "update";
+    public static final String OPEN = "open";
 
     public static final String CLOSE = "close";
 

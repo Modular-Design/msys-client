@@ -14,9 +14,9 @@ import java.util.Map;
 public class PropertyManager extends VisualElement {
     public PropertyManager(int handler_no){
         super("PropertyManager", handler_no, 4);
-        Map<String, Object> map = new HashMap<>();
-        map.put("url","/modules/root/");
-        publishEvent(Receivers.Client,0, NetworkEvents.GET, map);
+        //Map<String, Object> map = new HashMap<>();
+        //map.put("url","/modules/root/");
+        //publishEvent(Receivers.Client,0, NetworkEvents.GET, map);
     }
 
     @Override
