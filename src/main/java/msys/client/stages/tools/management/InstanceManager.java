@@ -25,18 +25,30 @@ public class InstanceManager extends VisualRemoteElement {
 
     @Override
     public void processGUIEvent(IGUIEventClient sender, String event, Map<String, Object> msg) {
-        if(event.equals(Events.OPEN)){
+        if(event.equals(Events.OPEN)) {
             Map<String, Object> map = new HashMap<>();
-            map.put("url",this.getHost()+"/factory/open/"+msg.get("key"));
-            publishEvent(Receivers.Client,0, NetworkEvents.GET, map);
+            map.put("url", this.getHost() + "/factory/open/" + msg.get("key"));
+            publishEvent(Receivers.Client, 0, NetworkEvents.GET, map);
             return;
         }
 
+        if (event.equals(NetworkEvents.GET)){
+            System.out.println("[InstanceMsg]: " + msg.toString());
+            Tab tab = new Tab();
+            for (String key : msg.keySet()){
+                if (key.equals("url")){
+                    continue;
+                }
+                tab.setText(key);
+                root.getTabs().add(tab);
+            }
+
+            // tab.setText(module.getName());
+            // tab.setContent(module.getInternLayout());
+
+        }
         // Module module = new Module(getHandlerNumber(), msg);
-        Tab tab = new Tab();
-        // tab.setText(module.getName());
-        // tab.setContent(module.getInternLayout());
-        root.getTabs().add(tab);
+
     }
 
 
